@@ -532,3 +532,51 @@ bool PardosGotorSeven::solve(const KDL::Frame &rhs, const KDL::Frame &pointTrans
 
 
 // -----------------------------------------------------------------------------
+
+PardosGotorThree_2::PardosGotorThree_2(const MatrixExponential & _exp_pg3, const MatrixExponential & _exp_pk1, const KDL::Vector & _p, const KDL::Vector & _k)
+    : exp_pg3(_exp_pg3),
+      exp_pk1(_exp_pk1),
+      p(_p),
+      k(_k),
+      axisPow(vectorPow2(exp_pk1.getAxis()))
+{}
+
+// -----------------------------------------------------------------------------
+
+bool PardosGotorThree_2::solve(const KDL::Frame & rhs, const KDL::Frame & pointTransform, const JointConfig & reference, Solutions & solutions) const
+{
+    KDL::Vector k2p = rhs * p;
+
+    PardosGotorThree pg3(exp_pg3, p, k);
+    Solutions pg3_sols;
+
+    bool pg3_ret = pg3.solve(rhs, pointTransform, reference, pg3_sols);
+
+    if(pg3_ret) return false;
+
+    KDL::Vector k2 = k2p + exp_pg3.getAxis() * pg3_sols[0][1];
+    KDL::Vector f = pointTransform * p;
+
+    KDL::Vector u = f - exp_pk1.getOrigin();
+    KDL::Vector v = k2 - exp_pk1.getOrigin();
+
+    KDL::Vector u_w = axisPow * u;
+    KDL::Vector v_w = axisPow * v;
+
+    KDL::Vector u_p = u - u_w;
+    KDL::Vector v_p = v - v_w;
+
+    double theta = reference[0];
+
+    if (!KDL::Equal(u_p.Norm(), 0.0) && !KDL::Equal(v_p.Norm(), 0.0))
+    {
+        theta = std::atan2(KDL::dot(exp_pk1.getAxis(), u_p * v_p), KDL::dot(u_p, v_p));
+    }
+
+    solutions = {{normalizeAngle(theta)}, {normalizeAngle(-theta)}};
+
+    return KDL::Equal(u_w, v_w) && KDL::Equal(u_p.Norm(), v_p.Norm());
+
+}
+
+// -----------------------------------------------------------------------------
