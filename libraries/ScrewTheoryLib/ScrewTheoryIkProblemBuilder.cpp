@@ -543,9 +543,8 @@ ScrewTheoryIkProblem::JointIdsToSubproblem ScrewTheoryIkProblemBuilder::trySolve
     if (pg5 == true && poeTerms[lastExpId + 1].simplified == true 
     && lastExp.getMotionType() == MatrixExponential::ROTATION
     && !liesOnAxis(lastExp, testPoints[0]) 
-    && unknownsCount == 1 && depth == 0)//if (poeTerms[lastExpId + 1].simplified == true)//HACE FALTA PONER ALGUNA CONDICION? DE MOMENTO FUNCIONA BIEN ASI
+    && unknownsCount == 1 && depth == 0)
     {
-        std::cout << "hola?\n";
         const MatrixExponential & nextToLastExp = poe.exponentialAtJoint(lastExpId + 1);
         poeTerms[lastExpId].known = true;
         return {{lastExpId}, new PardosGotorFive(lastExp, nextToLastExp, testPoints[0])};
@@ -744,22 +743,18 @@ void ScrewTheoryIkProblemBuilder::simplifyWithPardosFive()
                     && parallelAxes(currentExp, nextExp)
                     && !colinearAxes(currentExp, nextExp))
                 {
- /*MIRAR*/          if(poeTerms[i].known || poeTerms[i].simplified || poeTerms[i+1].known || poeTerms[i+1].simplified) break;//CREO QUE NO HACE FALTA
-
-                    std::cout<<"paralelos los ejes " << i << " y " << i + 1 << "\n";
+                    if(poeTerms[i].known || poeTerms[i].simplified || poeTerms[i+1].known || poeTerms[i+1].simplified) break;//CREO QUE NO HACE FALTA
                     // Might be ultimately simplified, let's find out in the next iterations.
                     simplified = true;
                     continue;
                 }
             }
             else if (nextExp.getMotionType() == MatrixExponential::ROTATION
-                    && firstExp.getMotionType() == MatrixExponential::ROTATION //estas dos comprobaciones de rotación creo que no harían falta
+                    && firstExp.getMotionType() == MatrixExponential::ROTATION 
                     && !parallelAxes(firstExp, nextExp)
                     && simplified == true)
             {
-                if(poeTerms[i].known || poeTerms[i].simplified || poeTerms[i+1].known || poeTerms[i+1].simplified) break;//CREO QUE NO HACE FALTA
-
-                std::cout<<"NO paralelos los ejes " << i << " y " << i + 1 << "\n";
+                if(poeTerms[i].known || poeTerms[i].simplified || poeTerms[i+1].known || poeTerms[i+1].simplified) break;
                 // Can simplify everything to the *right* of this PoE term.
                 for (int j = idStart + 1; j <= idEnd; j++)
                 {
@@ -788,7 +783,6 @@ void ScrewTheoryIkProblemBuilder::simplifyWithPardosFive()
                     && !colinearAxes(currentExp, prevExp))
                 {
                     if(poeTerms[i].known || poeTerms[i].simplified || poeTerms[i+1].known || poeTerms[i+1].simplified) break;
-                    std::cout<<"paralelos los ejes " << i << " y " << i + 1 << " (al revés)\n";
                     simplified = true;
                     continue;
                 }
@@ -798,7 +792,6 @@ void ScrewTheoryIkProblemBuilder::simplifyWithPardosFive()
                     && !parallelAxes(lastExp, prevExp)
                     && simplified == true)
             {
-                std::cout<<"NO paralelos los ejes " << i << " y " << i + 1 << " (al revés)\n";
                 // Can simplify everything to the *left* of this PoE term.
                 for (int j = idEnd - 1; j >= idStart; j--)
                 {
