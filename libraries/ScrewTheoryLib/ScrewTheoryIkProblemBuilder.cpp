@@ -750,7 +750,7 @@ void ScrewTheoryIkProblemBuilder::simplifyWithPardosFive()
                 }
             }
             else if (nextExp.getMotionType() == MatrixExponential::ROTATION
-                    && firstExp.getMotionType() == MatrixExponential::ROTATION 
+                    && firstExp.getMotionType() == MatrixExponential::ROTATION //estas dos comprobaciones de rotación creo que no harían falta
                     && !parallelAxes(firstExp, nextExp)
                     && simplified == true)
             {
