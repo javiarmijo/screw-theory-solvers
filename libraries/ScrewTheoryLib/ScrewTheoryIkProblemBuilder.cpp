@@ -390,6 +390,7 @@ void ScrewTheoryIkProblemBuilder::refreshSimplificationState()
 ScrewTheoryIkProblem::JointIdsToSubproblem ScrewTheoryIkProblemBuilder::trySolve(int depth)
 {
     int unknownsCount = std::count_if(poeTerms.begin(), poeTerms.end(), unknownNotSimplifiedTerm);
+    bool pg5 = false;
 
     if (unknownsCount == 0 || unknownsCount > 3) // TODO: hardcoded
     {
@@ -416,8 +417,18 @@ ScrewTheoryIkProblem::JointIdsToSubproblem ScrewTheoryIkProblemBuilder::trySolve
             if (lastExp.getMotionType() == MatrixExponential::ROTATION 
                     && !liesOnAxis(lastExp, testPoints[0]))
             {
-                poeTerms[lastExpId].known = true;
-                return {{lastExpId}, new PadenKahanOne(lastExp, testPoints[0])};
+                if (poeTerms[lastExpId + 1].simplified != true || poeTerms[lastExpId + 1].known == true)
+                {
+                    poeTerms[lastExpId].known = true;
+                    return {{lastExpId}, new PadenKahanOne(lastExp, testPoints[0])};
+                }
+                /*else
+                {
+                    poeTerms[lastExpId].known = true;
+                    const MatrixExponential & nextToLastExp = poe.exponentialAtJoint(lastExpId + 1);
+                    return {{lastExpId}, new PardosGotorFive(lastExp, nextToLastExp, testPoints[0])};
+                }
+                */
             }
 
             if (lastExp.getMotionType() == MatrixExponential::TRANSLATION)
@@ -449,6 +460,7 @@ ScrewTheoryIkProblem::JointIdsToSubproblem ScrewTheoryIkProblemBuilder::trySolve
                 return {{lastExpId}, new PardosGotorThree(lastExp, testPoints[0], testPoints[1])};
             }
         }
+        pg5 = true;
     }
     else if (unknownsCount == 2 && lastUnknown != poeTerms.rend())
     {
@@ -495,35 +507,50 @@ ScrewTheoryIkProblem::JointIdsToSubproblem ScrewTheoryIkProblemBuilder::trySolve
                 return {{nextToLastExpId, lastExpId}, new PardosGotorTwo(nextToLastExp, lastExp, testPoints[0])};
             }
         }
+        pg5 = true;
     }
-        else if(unknownsCount == 3 && nextToLastUnknown != poeTerms.rend())
+    else if(unknownsCount == 3 && nextToLastUnknown != poeTerms.rend())
+    {
+        if ((!unknownNotSimplifiedTerm(*nextToLastUnknown)) && (!unknownNotSimplifiedTerm(*doubleNextToLastUnknown)))
         {
-            if ((!unknownNotSimplifiedTerm(*nextToLastUnknown)) && (!unknownNotSimplifiedTerm(*doubleNextToLastUnknown)))
-            {
-                return {{}, nullptr};
-            }
+            return {{}, nullptr};
+        }
 
-            int nextToLastExpId = lastExpId - 1;
-            const MatrixExponential & nextToLastExp = poe.exponentialAtJoint(nextToLastExpId);
-            int secondNextToLastExpId = nextToLastExpId - 1;
-            const MatrixExponential & secondNextToLastExp = poe.exponentialAtJoint(secondNextToLastExpId);
+        int nextToLastExpId = lastExpId - 1;
+        const MatrixExponential & nextToLastExp = poe.exponentialAtJoint(nextToLastExpId);
+        int secondNextToLastExpId = nextToLastExpId - 1;
+        const MatrixExponential & secondNextToLastExp = poe.exponentialAtJoint(secondNextToLastExpId);
 
-            if (depth == 0)
-            {
-                KDL::Vector r;
+        if (depth == 0)
+        {
+            KDL::Vector r;
 
-                if (lastExp.getMotionType() == MatrixExponential::ROTATION
-                        && nextToLastExp.getMotionType() == MatrixExponential::ROTATION
-                        && secondNextToLastExp.getMotionType() == MatrixExponential::ROTATION
-                        && !parallelAxes(secondNextToLastExp, nextToLastExp)
-                        && parallelAxes(nextToLastExp, lastExp)
-                        && !colinearAxes(nextToLastExp, lastExp))
+            if (lastExp.getMotionType() == MatrixExponential::ROTATION
+                    && nextToLastExp.getMotionType() == MatrixExponential::ROTATION
+                    && secondNextToLastExp.getMotionType() == MatrixExponential::ROTATION
+                    && !parallelAxes(secondNextToLastExp, nextToLastExp)
+                    && parallelAxes(nextToLastExp, lastExp)
+                    && !colinearAxes(nextToLastExp, lastExp))
                 {
                     poeTerms[lastExpId].known = poeTerms[nextToLastExpId].known = poeTerms[secondNextToLastExpId].known = true;
                     return {{secondNextToLastExpId, nextToLastExpId, lastExpId}, new PardosGotorSeven(secondNextToLastExp, nextToLastExp, lastExp, testPoints[0])};
                 }
-            }
         }
+        pg5 = true;
+    }
+
+    ///*
+    if (pg5 == true && poeTerms[lastExpId + 1].simplified == true 
+    && lastExp.getMotionType() == MatrixExponential::ROTATION
+    && !liesOnAxis(lastExp, testPoints[0]) 
+    && unknownsCount == 1 && depth == 0)//if (poeTerms[lastExpId + 1].simplified == true)//HACE FALTA PONER ALGUNA CONDICION? DE MOMENTO FUNCIONA BIEN ASI
+    {
+        std::cout << "hola?\n";
+        const MatrixExponential & nextToLastExp = poe.exponentialAtJoint(lastExpId + 1);
+        poeTerms[lastExpId].known = true;
+        return {{lastExpId}, new PardosGotorFive(lastExp, nextToLastExp, testPoints[0])};
+    }
+    //*/
 
     return {{}, nullptr};
 }
@@ -548,6 +575,7 @@ void ScrewTheoryIkProblemBuilder::simplify(int depth)
                 break;
             }
         }
+        simplifyWithPardosFive();//si no se ha simplificado de ninguna forma, se prueba con PG5, no hace falta ir exponencial por exponencial ya que la función actúa para el poe completo
     }
 }
 
@@ -665,6 +693,112 @@ void ScrewTheoryIkProblemBuilder::simplifyWithPardosOne()
             }
             else if (normalPlaneMovement(prevExp, lastExp))
             {
+                // Can simplify everything to the *left* of this PoE term.
+                for (int j = idEnd - 1; j >= idStart; j--)
+                {
+                    poeTerms[j].simplified = true;
+                }
+            }
+
+            break;
+        }
+    }
+}
+
+// -----------------------------------------------------------------------------
+
+void ScrewTheoryIkProblemBuilder::simplifyWithPardosFive()
+{
+    // Pick first leftmost and rightmost unknown PoE terms.
+    auto itUnknown = std::find_if(poeTerms.begin(), poeTerms.end(), unknownNotSimplifiedTerm);
+    auto ritUnknown = std::find_if(poeTerms.rbegin(), poeTerms.rend(), unknownNotSimplifiedTerm);
+
+    int idStart = std::distance(poeTerms.begin(), itUnknown);
+    int idEnd = std::distance(ritUnknown, poeTerms.rend()) - 1;
+
+    if (idStart >= idEnd)
+    {
+        // Same term or something went wrong (all terms have been already simplified).
+        return;
+    }
+
+    const MatrixExponential & firstExp = poe.exponentialAtJoint(idStart);
+    const MatrixExponential & lastExp = poe.exponentialAtJoint(idEnd);
+
+    if (firstExp.getMotionType() == MatrixExponential::ROTATION)
+    {
+        bool simplified = false;
+
+        // Advance from the leftmost PoE term.
+        for (int i = idEnd - 1; i >= idStart; i--)
+        {
+            const MatrixExponential & nextExp = poe.exponentialAtJoint(i + 1);
+
+            // Compare two consecutive PoE terms.
+            if (i != idStart)
+            {
+                const MatrixExponential & currentExp = poe.exponentialAtJoint(i);
+
+                if (nextExp.getMotionType() == MatrixExponential::ROTATION
+                    && currentExp.getMotionType() == MatrixExponential::ROTATION
+                    && parallelAxes(currentExp, nextExp)
+                    && !colinearAxes(currentExp, nextExp))
+                {
+ /*MIRAR*/          if(poeTerms[i].known || poeTerms[i].simplified || poeTerms[i+1].known || poeTerms[i+1].simplified) break;//CREO QUE NO HACE FALTA
+
+                    std::cout<<"paralelos los ejes " << i << " y " << i + 1 << "\n";
+                    // Might be ultimately simplified, let's find out in the next iterations.
+                    simplified = true;
+                    continue;
+                }
+            }
+            else if (nextExp.getMotionType() == MatrixExponential::ROTATION
+                    && firstExp.getMotionType() == MatrixExponential::ROTATION //estas dos comprobaciones de rotación creo que no harían falta
+                    && !parallelAxes(firstExp, nextExp)
+                    && simplified == true)
+            {
+                if(poeTerms[i].known || poeTerms[i].simplified || poeTerms[i+1].known || poeTerms[i+1].simplified) break;//CREO QUE NO HACE FALTA
+
+                std::cout<<"NO paralelos los ejes " << i << " y " << i + 1 << "\n";
+                // Can simplify everything to the *right* of this PoE term.
+                for (int j = idStart + 1; j <= idEnd; j++)
+                {
+                    poeTerms[j].simplified = true;
+                }
+            }
+
+            break;
+        }
+    }
+    else if (lastExp.getMotionType() == MatrixExponential::ROTATION)
+    {
+        bool simplified = false;
+        // Advance from the rightmost PoE term.
+        for (int i = idStart + 1; i <= idEnd; i++)
+        {
+            const MatrixExponential & prevExp = poe.exponentialAtJoint(i - 1);
+
+            if (i != idEnd)
+            {
+                const MatrixExponential & currentExp = poe.exponentialAtJoint(i);
+
+                if (prevExp.getMotionType() == MatrixExponential::ROTATION
+                    && currentExp.getMotionType() == MatrixExponential::ROTATION
+                    && parallelAxes(currentExp, prevExp)
+                    && !colinearAxes(currentExp, prevExp))
+                {
+                    if(poeTerms[i].known || poeTerms[i].simplified || poeTerms[i+1].known || poeTerms[i+1].simplified) break;
+                    std::cout<<"paralelos los ejes " << i << " y " << i + 1 << " (al revés)\n";
+                    simplified = true;
+                    continue;
+                }
+            }
+            else if (prevExp.getMotionType() == MatrixExponential::ROTATION
+                    && lastExp.getMotionType() == MatrixExponential::ROTATION //estas dos comprobaciones de rotación creo que no harían falta
+                    && !parallelAxes(lastExp, prevExp)
+                    && simplified == true)
+            {
+                std::cout<<"NO paralelos los ejes " << i << " y " << i + 1 << " (al revés)\n";
                 // Can simplify everything to the *left* of this PoE term.
                 for (int j = idEnd - 1; j >= idStart; j--)
                 {

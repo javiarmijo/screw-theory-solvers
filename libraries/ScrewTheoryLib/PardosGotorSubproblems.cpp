@@ -230,6 +230,81 @@ bool PardosGotorFour::solve(const KDL::Frame & rhs, const KDL::Frame & pointTran
 
 // -----------------------------------------------------------------------------
 
+PardosGotorFive::PardosGotorFive(const MatrixExponential & _exp, const MatrixExponential & _exp_next, const KDL::Vector & _p)
+    : exp(_exp),
+      exp_next(_exp_next),
+      p(_p),
+      axisPow(vectorPow2(exp.getAxis()))
+{}
+
+// -----------------------------------------------------------------------------
+
+bool PardosGotorFive::solve(const KDL::Frame & rhs, const KDL::Frame & pointTransform, const JointConfig & reference, Solutions & solutions) const
+{
+    KDL::Vector f = pointTransform * p;
+    KDL::Vector k = rhs * p;
+    KDL::Vector k_verify = rhs * p;
+
+    bool ret = true;
+
+    //HACER QUE LA COORDENADA CORRESPONDIENTE AL EJE DE LA ROTACIÓN SEA LA MISMA PARA F(EQUIVALENTE A P) Y K
+    for(int i=0; i < 3; i++)
+    {
+        if(exp.getAxis().data[i]!=0) k_verify.data[i]=f.data[i];
+    }
+
+    KDL::Vector u = f - exp.getOrigin();
+    KDL::Vector v = k - exp.getOrigin();
+
+    KDL::Vector u_w = axisPow * u;
+    KDL::Vector v_w = axisPow * v;
+
+    if (!(KDL::Equal(u_w, axisPow * (k_verify - exp.getOrigin())))) ret = false;
+
+    KDL::Vector u_p = u - u_w;
+    KDL::Vector v_p = v - v_w;
+
+    double theta_k = reference[0];
+/*MIRAR*/    double theta_d = reference[0]; //no sería [1]? para que sirve reference????
+
+    if (!KDL::Equal(u_p.Norm(), 0.0) && !KDL::Equal(v_p.Norm(), 0.0))
+    {
+        theta_k = std::atan2(KDL::dot(exp.getAxis(), u_p * v_p), KDL::dot(u_p, v_p));
+        theta_d= theta_k - KDL::PI;
+    }
+
+    //Ajuste PG5 
+
+    for(int i=0; i < 3; i++)
+    {
+        if(!(KDL::Equal(exp_next.getAxis().data[i],0))) 
+        {
+            float x = dot(f - exp.getOrigin(), exp_next.getAxis());
+            if(x != 0)
+            {
+                double d = f.data[i];//es la distancia que estará desplazado el plano con respecto al plano de movimiento
+
+                //Recalcula los ángulso con el ajuste
+
+                double sin1 = std::clamp(d / v_p.Norm(), -1.0, 1.0);//acota el valor entre -1 y 1
+                double sin2 = std::clamp(d / u_p.Norm(), -1.0, 1.0);
+
+                theta_k = theta_k - std::asin(sin1) + std::asin(sin2);
+                theta_d = theta_d + std::asin(sin1) + std::asin(sin2);
+
+            }
+        }
+    }
+        
+    solutions = {{normalizeAngle(theta_k)}, {normalizeAngle(theta_d)}};
+
+    //return KDL::Equal(u_w, v_w);// && KDL::Equal(u_p.Norm(), v_p.Norm()); eso sería para pk1
+
+    return ret;
+}
+
+// -----------------------------------------------------------------------------
+
 PardosGotorSix::PardosGotorSix(const MatrixExponential & _exp1, const MatrixExponential & _exp2, const KDL::Vector & _p)
     : exp1(_exp1),
       exp2(_exp2),

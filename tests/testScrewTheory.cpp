@@ -1187,6 +1187,50 @@ TEST_F(ScrewTheoryTest, PardosGotorFour)
     checkSolutions(actual, expected);
 }
 
+TEST_F(ScrewTheoryTest, PardosGotorFive)
+{
+    KDL::Vector p(0, 1, 1);
+    KDL::Vector k(2, 0, 0);
+
+    MatrixExponential exp(MatrixExponential::ROTATION, {0, 0, 1}, {0, 0, 0});
+    MatrixExponential exp2(MatrixExponential::ROTATION, {1, 0, 0}, {0, 0, 0});
+    PardosGotorFive pg5(exp, exp2, p);
+
+    ASSERT_EQ(pg5.solutions(), 2);  
+
+    KDL::Frame rhs(k - p);
+    ScrewTheoryIkSubproblem::Solutions actual;
+    ASSERT_TRUE(pg5.solve(rhs, KDL::Frame::Identity(), actual));
+
+    ASSERT_EQ(actual.size(), 2);
+    ASSERT_EQ(actual[0].size(), 1);
+    ASSERT_EQ(actual[1].size(), 1);
+
+    ScrewTheoryIkSubproblem::Solutions expected = {
+        {-KDL::PI_2},
+        {KDL::PI_2},
+    };
+
+    checkSolutions(actual, expected);
+
+    //caso del ajuste
+
+    KDL::Vector p2(0.3, 1, 1);
+
+    PardosGotorFive pg5b(exp, exp2, p2);
+
+    KDL::Frame rhs2(k - p2);
+    ASSERT_TRUE(pg5b.solve(rhs, KDL::Frame::Identity(), actual));
+
+    expected = {
+        {-1.11869},
+        {2.284517},
+    };
+
+    checkSolutions(actual, expected);
+
+}
+
 TEST_F(ScrewTheoryTest, PardosGotorSix)
 {
     //Dos ejes que se cruzan normales

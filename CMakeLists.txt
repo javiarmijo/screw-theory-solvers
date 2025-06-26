@@ -52,7 +52,7 @@ enable_testing()
 add_subdirectory(libraries)
 add_subdirectory(programs)
 add_subdirectory(tests)
-#add_subdirectory(bindings)
+add_subdirectory(bindings)
 add_subdirectory(doc)
 
 # Collect public exported dependencies.
