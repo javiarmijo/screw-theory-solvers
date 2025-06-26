@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.19...3.30)
 
-project(ROBOTICSLAB_KINEMATICS_DYNAMICS LANGUAGES CXX)
+project(SCREW_THEORY_SOLVERS LANGUAGES CXX)
 
 # Let the user specify a configuration (only single-config generators).
 if(NOT CMAKE_CONFIGURATION_TYPES)
@@ -68,7 +68,7 @@ set(CMAKE_EXPORT_PACKAGE_REGISTRY ON)
 # Create and install config files.
 include(InstallBasicPackageFiles)
 
-install_basic_package_files(ROBOTICSLAB_KINEMATICS_DYNAMICS
+install_basic_package_files(SCREW_THEORY_SOLVERS
                             VERSION 0.1.0
                             COMPATIBILITY AnyNewerVersion
                             NO_SET_AND_CHECK_MACRO

@@ -38,7 +38,7 @@ if(ENABLE_ScrewTheoryLib)
     target_compile_features(ScrewTheoryLib PUBLIC cxx_std_17) # nested namespace definition
 
     install(TARGETS ScrewTheoryLib
-            EXPORT ROBOTICSLAB_KINEMATICS_DYNAMICS)
+            EXPORT SCREW_THEORY_SOLVERS)
 
     set_property(GLOBAL APPEND PROPERTY _exported_dependencies orocos_kdl)
 
