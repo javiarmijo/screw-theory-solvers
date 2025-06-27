@@ -86,6 +86,8 @@ std::vector<bool> ScrewTheoryIkProblem::solve(const KDL::Frame & H_S_T, const KD
     // Reserve space in memory to avoid additional allocations on runtime.
     solutions.reserve(soln);
 
+/**/KDL::Frame H_S_T_0 = poe.getTransform(); //H_S_T_0?
+
     // Insert a dummy value to avoid accessing an empty vector.
     solutions.emplace_back(poe.size());
     rhsFrames.emplace_back((reversed ? H_S_T.Inverse() : H_S_T) * poe.getTransform().Inverse());
