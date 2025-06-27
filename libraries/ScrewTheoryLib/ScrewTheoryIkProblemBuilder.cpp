@@ -127,7 +127,7 @@ namespace
     };
 
     // Can't inline into previous definition, Doxygen output is messed up by the first variable.
-    poe_term_candidate knownTerm(true), unknownTerm(false), knownNotSimplifiedTerm(true, false), unknownNotSimplifiedTerm(false, false);
+    poe_term_candidate knownTerm(true), unknownTerm(false), knownNotSimplifiedTerm(true, false), unknownNotSimplifiedTerm(false, false), unknownSimplifiedTerm(false, true);
 
     void clearSteps(ScrewTheoryIkProblem::Steps & steps)
     {
@@ -389,13 +389,52 @@ void ScrewTheoryIkProblemBuilder::refreshSimplificationState()
 
 ScrewTheoryIkProblem::JointIdsToSubproblem ScrewTheoryIkProblemBuilder::trySolve(int depth)
 {
+    int knownsCount = std::count_if(poeTerms.begin(), poeTerms.end(), knownTerm);
+    int simplifiedCount = std::count_if(poeTerms.begin(), poeTerms.end(), unknownSimplifiedTerm);
     int unknownsCount = std::count_if(poeTerms.begin(), poeTerms.end(), unknownNotSimplifiedTerm);
     bool pg5 = false;
 
-    if (unknownsCount == 0 || unknownsCount > 3) // TODO: hardcoded
+    if (unknownsCount == 0 || unknownsCount > 2) // TODO: hardcoded
     {
-        // Can't solve yet, too many unknowns or oversimplified.
-        return {{}, nullptr};
+        if (depth == 1 && simplifiedCount <= 1)
+        {
+            KDL::Vector point;
+            MatrixExponential exp_pg3(MatrixExponential::TRANSLATION, KDL::Vector(0, 0, 0));
+            MatrixExponential exp_pk1(MatrixExponential::ROTATION, KDL::Vector(0, 0, 0));
+
+            if (simplifyWithPardosThree(exp_pg3, exp_pk1, point)) 
+            {
+                auto lastUnknown_pg3 = std::find_if(poeTerms.rbegin(), poeTerms.rend(), unknownNotSimplifiedTerm);
+                int lastExpId_pg3 = std::distance(poeTerms.begin(), lastUnknown_pg3.base()) - 1;
+                const MatrixExponential & lastExp_pg3 = poe.exponentialAtJoint(lastExpId_pg3);
+                
+                poeTerms[lastExpId_pg3].known = true;
+                return {{lastExpId_pg3}, new PardosGotorThree_2(exp_pg3, exp_pk1, testPoints[0], point)};
+            }
+            else if (knownsCount == 2)
+            {
+                auto itUnknown = std::find_if(poeTerms.begin(), poeTerms.end(), unknownTerm);
+                int un = std::distance(poeTerms.begin(), itUnknown);
+                int last = std::distance(poeTerms.begin(), poeTerms.end()-1);
+
+                auto itknown1 = std::find_if(poeTerms.begin(), poeTerms.end(), knownTerm);
+                int q1 = std::distance(poeTerms.begin(), itknown1);
+                auto itknown2 = std::find_if(itknown1 + 1, poeTerms.end(), knownTerm);
+                int q2 = std::distance(poeTerms.begin(), itknown2);
+
+                const MatrixExponential & sim_axis = poe.exponentialAtJoint(un);
+                const MatrixExponential & last_axis = poe.exponentialAtJoint(last);
+
+                if (parallelAxes(sim_axis, last_axis))
+                {
+                poeTerms[last].known = true;
+                //return {{last}, new Algebraic_UR(q1, q2)};
+                return {{last}, new PadenKahanOne(last_axis, testPoints[0])}; //cambiar es para que ccompile, de momento
+                }
+            }
+            else return {{}, nullptr};
+        } 
+        else return {{}, nullptr};  // Can't solve yet, too many unknowns or oversimplified.
     }
 
     // Find rightmost unknown and not simplified PoE term.
@@ -804,4 +843,88 @@ void ScrewTheoryIkProblemBuilder::simplifyWithPardosFive()
     }
 }
 
+// -----------------------------------------------------------------------------
+
+bool ScrewTheoryIkProblemBuilder::simplifyWithPardosThree(MatrixExponential & exp1, MatrixExponential & exp2, KDL::Vector & point)
+{
+    // Pick first leftmost and rightmost unknown PoE terms.
+    auto itUnknown = std::find_if(poeTerms.begin(), poeTerms.end(), unknownNotSimplifiedTerm);
+    auto ritUnknown = std::find_if(poeTerms.rbegin(), poeTerms.rend(), unknownNotSimplifiedTerm);
+
+    int idStart = std::distance(poeTerms.begin(), itUnknown);
+    int idEnd = std::distance(ritUnknown, poeTerms.rend()) - 1;
+
+    if (idStart >= idEnd)
+    {
+        // Same term or something went wrong (all terms have been already simplified).
+        return false;
+    }
+
+    const MatrixExponential & firstExp = poe.exponentialAtJoint(idStart);
+    const MatrixExponential & lastExp = poe.exponentialAtJoint(idEnd);
+
+    if (lastExp.getMotionType() == MatrixExponential::ROTATION)
+    {
+        bool simplified = false;
+        // Advance from the rightmost PoE term.
+        for (int i = idStart + 1; i <= idEnd; i++)
+        {
+            const MatrixExponential & prevExp = poe.exponentialAtJoint(i - 1);
+
+            if (i != idEnd)
+            {
+                const MatrixExponential & currentExp = poe.exponentialAtJoint(i);
+
+                if (prevExp.getMotionType() == MatrixExponential::ROTATION
+                    && currentExp.getMotionType() == MatrixExponential::ROTATION
+                    && parallelAxes(currentExp, prevExp)
+                    && !colinearAxes(currentExp, prevExp))
+                {
+                    if(poeTerms[i].known || poeTerms[i].simplified || poeTerms[i+1].known || poeTerms[i+1].simplified)
+                    {
+                        //std::cout <<"NO NOOOO???  hola??????\n";
+                        return false;
+                        //break;
+                    }  
+                    //std::cout<<"NUEVO : paralelos los ejes " << i << " y " << i + 1 << " (al revés)\n";
+                    simplified = true;
+                    continue;
+                }
+            }
+            else if (prevExp.getMotionType() == MatrixExponential::ROTATION
+                    && lastExp.getMotionType() == MatrixExponential::ROTATION //estas dos comprobaciones de rotación creo que no harían falta
+                    && !parallelAxes(lastExp, prevExp)
+                    && simplified == true)
+                {
+                    if(poeTerms[i].known || poeTerms[i].simplified)
+                    {
+                        //std::cout <<"hola??????\n";
+                        return false;
+                    } 
+
+                    int unknownsCount = std::count_if(poeTerms.begin(), poeTerms.end(), unknownNotSimplifiedTerm);
+
+                    if((unknownsCount - (idEnd - idStart)) == 1)
+                    {
+                        KDL::Vector axesCross = lastExp.getAxis() * prevExp.getAxis();
+
+                        std::cout << "axesCross = (" << axesCross.x() << ", " << axesCross.y() << ", " << axesCross.z() << ") \n";
+
+                        MatrixExponential exp7(MatrixExponential::TRANSLATION, axesCross);
+                        std::cout << "test point1 = (" << testPoints[0].x() << ", " << testPoints[0].y() << ", " << testPoints[0].z() << ") \n";
+                        std::cout << "test point2 = (" << testPoints[1].x() << ", " << testPoints[1].y() << ", " << testPoints[1].z() << ") \n";
+                        std::cout << "point = (" << lastExp.getOrigin().x() << ", " << lastExp.getOrigin().y() << ", " << lastExp.getOrigin().z() << ") \n";
+                        exp1 = exp7;
+                        exp2 = lastExp;
+                        point = lastExp.getOrigin();
+
+                        return true; 
+                    }
+                }
+                break;
+        }
+    }
+    return false;
+}
+    
 // -----------------------------------------------------------------------------
