@@ -273,11 +273,11 @@ bool PardosGotorFive::solve(const KDL::Frame & rhs, const KDL::Frame & pointTran
         theta_d= theta_k - KDL::PI;
     }
 
-    //Ajuste PG5 
+    //Ajuste PG5
 
     for(int i=0; i < 3; i++)
     {
-        if(!(KDL::Equal(exp_next.getAxis().data[i],0))) 
+        if(!(KDL::Equal(exp_next.getAxis().data[i],0)))
         {
             float x = dot(f - exp.getOrigin(), exp_next.getAxis());
             if(x != 0)
@@ -295,7 +295,7 @@ bool PardosGotorFive::solve(const KDL::Frame & rhs, const KDL::Frame & pointTran
             }
         }
     }
-        
+
     solutions = {{normalizeAngle(theta_k)}, {normalizeAngle(theta_d)}};
 
     //return KDL::Equal(u_w, v_w);// && KDL::Equal(u_p.Norm(), v_p.Norm()); eso sería para pk1
@@ -432,7 +432,7 @@ PardosGotorSeven::PardosGotorSeven(const MatrixExponential & _exp1, const Matrix
 // -----------------------------------------------------------------------------
 
 bool PardosGotorSeven::solve(const KDL::Frame &rhs, const KDL::Frame &pointTransform, const JointConfig &reference, Solutions &solutions) const {
-    
+
     KDL::Vector f = pointTransform * p;
     KDL::Vector k = rhs * p;
     KDL::Vector u = f - exp3.getOrigin();
@@ -486,7 +486,7 @@ bool PardosGotorSeven::solve(const KDL::Frame &rhs, const KDL::Frame &pointTrans
         if (!KDL::Equal(v_p1.Norm(), 0.0))
         {
             theta_dk = std::atan2(KDL::dot(exp1.getAxis(), n1_p * v_p1), KDL::dot(n1_p, v_p1));
-            theta_ck = std::atan2(KDL::dot(exp1.getAxis(), m1_p * v_p1), KDL::dot(m1_p, v_p1));            
+            theta_ck = std::atan2(KDL::dot(exp1.getAxis(), m1_p * v_p1), KDL::dot(m1_p, v_p1));
         }
     }
     else if (pg4_ret_c)
@@ -497,7 +497,7 @@ bool PardosGotorSeven::solve(const KDL::Frame &rhs, const KDL::Frame &pointTrans
         if (!KDL::Equal(v_p1.Norm(), 0.0))
         {
             theta_ck = std::atan2(KDL::dot(exp1.getAxis(), m1_p * v_p1), KDL::dot(m1_p, v_p1));
-            theta_dk = theta_ck;            
+            theta_dk = theta_ck;
         }
 
         pg4_d_sols = pg4_c_sols;
@@ -510,7 +510,7 @@ bool PardosGotorSeven::solve(const KDL::Frame &rhs, const KDL::Frame &pointTrans
         if (!KDL::Equal(v_p1.Norm(), 0.0))
         {
             theta_dk = std::atan2(KDL::dot(exp1.getAxis(), n1_p * v_p1), KDL::dot(n1_p, v_p1));
-            theta_ck = theta_dk;            
+            theta_ck = theta_dk;
         }
 
         pg4_c_sols = pg4_d_sols;
@@ -518,7 +518,7 @@ bool PardosGotorSeven::solve(const KDL::Frame &rhs, const KDL::Frame &pointTrans
     else
     {
         return false;
-    } 
+    }
 
     solutions = {
         {theta_ck, pg4_c_sols[0][0], pg4_c_sols[0][1]},
@@ -533,7 +533,7 @@ bool PardosGotorSeven::solve(const KDL::Frame &rhs, const KDL::Frame &pointTrans
 
 // -----------------------------------------------------------------------------
 
-PardosGotorThree_2::PardosGotorThree_2(const MatrixExponential & _exp_pg3, const MatrixExponential & _exp_pk1, const KDL::Vector & _p, const KDL::Vector & _k)
+PardosGotorThreePadenKahanOne::PardosGotorThreePadenKahanOne(const MatrixExponential & _exp_pg3, const MatrixExponential & _exp_pk1, const KDL::Vector & _p, const KDL::Vector & _k)
     : exp_pg3(_exp_pg3),
       exp_pk1(_exp_pk1),
       p(_p),
@@ -543,7 +543,7 @@ PardosGotorThree_2::PardosGotorThree_2(const MatrixExponential & _exp_pg3, const
 
 // -----------------------------------------------------------------------------
 
-bool PardosGotorThree_2::solve(const KDL::Frame & rhs, const KDL::Frame & pointTransform, const JointConfig & reference, Solutions & solutions) const
+bool PardosGotorThreePadenKahanOne::solve(const KDL::Frame & rhs, const KDL::Frame & pointTransform, const JointConfig & reference, Solutions & solutions) const
 {
     KDL::Vector k2p = rhs * p;
 
@@ -581,7 +581,7 @@ bool PardosGotorThree_2::solve(const KDL::Frame & rhs, const KDL::Frame & pointT
 
 // -----------------------------------------------------------------------------
 
-Algebraic_UR::Algebraic_UR(const int & _j1, const int & _j2) //RECIBE ENTEROS CON LAS POSICIONES DE LAS ARTICULACIONES RESUELTAS
+Algebraic_UR::Algebraic_UR(int _j1, int _j2) //RECIBE ENTEROS CON LAS POSICIONES DE LAS ARTICULACIONES RESUELTAS
     : j1(_j1),
       j2(_j2)
 {}
@@ -589,12 +589,12 @@ Algebraic_UR::Algebraic_UR(const int & _j1, const int & _j2) //RECIBE ENTEROS CO
 // -----------------------------------------------------------------------------
 
 bool Algebraic_UR::solve(const KDL::Frame & rhs, const KDL::Frame & pointTransform, const JointConfig & reference, Solutions & solutions, const KDL::Frame & H_S_T_0, const KDL::JntArray & c_solutions) const
-{   
+{
     //TIENE QUE RECIBIR SOLUTIONS Y H_S_T_0
 
     double nx = H_S_T_0.M(0, 0);
     double ny = H_S_T_0.M(1, 0);
-    double ox = H_S_T_0(0, 1); 
+    double ox = H_S_T_0(0, 1);
     double oy = H_S_T_0(1, 1);
 
     double theta = atan2((ox * sin(c_solutions(j1)) - oy * cos(c_solutions(j1))) / sin(c_solutions(j2)) ,(ny * cos(c_solutions(j1)) - nx * sin(c_solutions(j1)) / sin(c_solutions(j2))));

@@ -277,9 +277,9 @@ private:
  *
  * @brief Fifth Pardos-Gotor subproblem
  *
- * 
- * 
- * 
+ *
+ *
+ *
  */
 class PardosGotorFive : public ScrewTheoryIkSubproblem
 {
@@ -354,7 +354,7 @@ private:
  * @brief Seventh Pardos-Gotor subproblem
  *
  * Four triple solutions
- * 
+ *
  * (three consecutive rotation screws applied to a point, one skew + two parallel,
  * @cite pardosgotor2022str).
  */
@@ -398,7 +398,7 @@ private:
  * (translation screw for moving @f$ p @f$ to a distance @f$ \delta @f$ from @f$ k @f$,
  * see @cite pardosgotor2018str @cite pardosgotor2022str).
  */
-class PardosGotorThree_2 : public ScrewTheoryIkSubproblem
+class PardosGotorThreePadenKahanOne : public ScrewTheoryIkSubproblem
 {
 public:
     using ScrewTheoryIkSubproblem::solve;
@@ -410,7 +410,7 @@ public:
      * @param p First characteristic point.
      * @param k Second characteristic point.
      */
-    PardosGotorThree_2(const MatrixExponential & exp, const MatrixExponential & exp_pk1, const KDL::Vector & p, const KDL::Vector & k);
+    PardosGotorThreePadenKahanOne(const MatrixExponential & exp, const MatrixExponential & exp_pk1, const KDL::Vector & p, const KDL::Vector & k);
 
     bool solve(const KDL::Frame & rhs, const KDL::Frame & pointTransform, const JointConfig & reference, Solutions & solutions) const override;
 
@@ -432,9 +432,9 @@ private:
  * @brief Algebraic approach
  *
  * Single solution
- * 
- * 
- * 
+ *
+ *
+ *
  */
 class Algebraic_UR : public ScrewTheoryIkSubproblem
 {
@@ -446,9 +446,9 @@ public:
      *
      * @param q1 Index for the first joint.
      * @param q2  Index for the second joint.
-     * 
+     *
      */
-    Algebraic_UR(const int & j1, const int & j2);
+    Algebraic_UR(int j1, int j2);
 
     bool solve(const KDL::Frame & rhs, const KDL::Frame & pointTransform, const JointConfig & reference, Solutions & solutions, const KDL::Frame & H_S_T_0, const KDL::JntArray & c_solutions) const override;
 

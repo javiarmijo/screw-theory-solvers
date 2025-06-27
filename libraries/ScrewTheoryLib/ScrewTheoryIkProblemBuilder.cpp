@@ -402,14 +402,14 @@ ScrewTheoryIkProblem::JointIdsToSubproblem ScrewTheoryIkProblemBuilder::trySolve
             MatrixExponential exp_pg3(MatrixExponential::TRANSLATION, KDL::Vector(0, 0, 0));
             MatrixExponential exp_pk1(MatrixExponential::ROTATION, KDL::Vector(0, 0, 0));
 
-            if (simplifyWithPardosThree(exp_pg3, exp_pk1, point)) 
+            if (simplifyWithPardosThree(exp_pg3, exp_pk1, point))
             {
                 auto lastUnknown_pg3 = std::find_if(poeTerms.rbegin(), poeTerms.rend(), unknownNotSimplifiedTerm);
                 int lastExpId_pg3 = std::distance(poeTerms.begin(), lastUnknown_pg3.base()) - 1;
                 const MatrixExponential & lastExp_pg3 = poe.exponentialAtJoint(lastExpId_pg3);
-                
+
                 poeTerms[lastExpId_pg3].known = true;
-                return {{lastExpId_pg3}, new PardosGotorThree_2(exp_pg3, exp_pk1, testPoints[0], point)};
+                return {{lastExpId_pg3}, new PardosGotorThreePadenKahanOne(exp_pg3, exp_pk1, testPoints[0], point)};
             }
             else if (knownsCount == 2)
             {
@@ -432,7 +432,7 @@ ScrewTheoryIkProblem::JointIdsToSubproblem ScrewTheoryIkProblemBuilder::trySolve
                 }
             }
             else return {{}, nullptr};
-        } 
+        }
         else return {{}, nullptr};  // Can't solve yet, too many unknowns or oversimplified.
     }
 
@@ -452,7 +452,7 @@ ScrewTheoryIkProblem::JointIdsToSubproblem ScrewTheoryIkProblemBuilder::trySolve
     {
         if (depth == 0)
         {
-            if (lastExp.getMotionType() == MatrixExponential::ROTATION 
+            if (lastExp.getMotionType() == MatrixExponential::ROTATION
                     && !liesOnAxis(lastExp, testPoints[0]))
             {
                 if (poeTerms[lastExpId + 1].simplified != true || poeTerms[lastExpId + 1].known == true)
@@ -514,7 +514,7 @@ ScrewTheoryIkProblem::JointIdsToSubproblem ScrewTheoryIkProblemBuilder::trySolve
         {
             KDL::Vector r;
 
-            if (lastExp.getMotionType() == MatrixExponential::ROTATION 
+            if (lastExp.getMotionType() == MatrixExponential::ROTATION
                     && nextToLastExp.getMotionType() == MatrixExponential::ROTATION)
             {
                  if (!parallelAxes(lastExp, nextToLastExp))
@@ -578,9 +578,9 @@ ScrewTheoryIkProblem::JointIdsToSubproblem ScrewTheoryIkProblemBuilder::trySolve
     }
 
     ///*
-    if (pg5 == true && poeTerms[lastExpId + 1].simplified == true 
+    if (pg5 == true && poeTerms[lastExpId + 1].simplified == true
     && lastExp.getMotionType() == MatrixExponential::ROTATION
-    && !liesOnAxis(lastExp, testPoints[0]) 
+    && !liesOnAxis(lastExp, testPoints[0])
     && unknownsCount == 1 && depth == 0)
     {
         const MatrixExponential & nextToLastExp = poe.exponentialAtJoint(lastExpId + 1);
@@ -884,7 +884,7 @@ bool ScrewTheoryIkProblemBuilder::simplifyWithPardosThree(MatrixExponential & ex
                         //std::cout <<"NO NOOOO???  hola??????\n";
                         return false;
                         //break;
-                    }  
+                    }
                     //std::cout<<"NUEVO : paralelos los ejes " << i << " y " << i + 1 << " (al revés)\n";
                     simplified = true;
                     continue;
@@ -899,7 +899,7 @@ bool ScrewTheoryIkProblemBuilder::simplifyWithPardosThree(MatrixExponential & ex
                     {
                         //std::cout <<"hola??????\n";
                         return false;
-                    } 
+                    }
 
                     int unknownsCount = std::count_if(poeTerms.begin(), poeTerms.end(), unknownNotSimplifiedTerm);
 
@@ -917,7 +917,7 @@ bool ScrewTheoryIkProblemBuilder::simplifyWithPardosThree(MatrixExponential & ex
                         exp2 = lastExp;
                         point = lastExp.getOrigin();
 
-                        return true; 
+                        return true;
                     }
                 }
                 break;
@@ -925,5 +925,5 @@ bool ScrewTheoryIkProblemBuilder::simplifyWithPardosThree(MatrixExponential & ex
     }
     return false;
 }
-    
+
 // -----------------------------------------------------------------------------

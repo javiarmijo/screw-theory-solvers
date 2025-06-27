@@ -25,7 +25,7 @@ set(Python3_FIND_UNVERSIONED_NAMES FIRST)
 project(python_screw_theory_solvers)
 
 # find a matching version of orocos_kdl
-find_package(SCREW_THEORY_SOLVERS REQUIRED)
+#find_package(SCREW_THEORY_SOLVERS REQUIRED)
 
 set(PYBIND11_PYTHON_VERSION 3 CACHE STRING "Python version used by PyBind11")
 

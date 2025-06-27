@@ -79,7 +79,7 @@ public:
         return solve(rhs, pointTransform, reference, solutions);
     }
 
-    bool solve(const KDL::Frame & rhs, const KDL::Frame & pointTransform, Solutions & _solutions)
+    bool solve(const KDL::Frame & rhs, const KDL::Frame & pointTransform, Solutions & _solutions) const
     {
         return solve(rhs, pointTransform, JointConfig(solutions()), _solutions);
     }
