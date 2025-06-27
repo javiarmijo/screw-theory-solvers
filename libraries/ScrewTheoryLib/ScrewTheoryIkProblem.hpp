@@ -74,6 +74,11 @@ public:
      */
     virtual bool solve(const KDL::Frame & rhs, const KDL::Frame & pointTransform, const JointConfig & reference, Solutions & solutions) const = 0;
 
+    virtual bool solve(const KDL::Frame & rhs, const KDL::Frame & pointTransform, const JointConfig & reference, Solutions & solutions, const KDL::Frame & H_S_T_0, const KDL::JntArray & c_solutions) const
+    {
+        return solve(rhs, pointTransform, reference, solutions);
+    }
+
     bool solve(const KDL::Frame & rhs, const KDL::Frame & pointTransform, Solutions & _solutions)
     {
         return solve(rhs, pointTransform, JointConfig(solutions()), _solutions);

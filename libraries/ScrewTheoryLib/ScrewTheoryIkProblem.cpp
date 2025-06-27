@@ -86,7 +86,7 @@ std::vector<bool> ScrewTheoryIkProblem::solve(const KDL::Frame & H_S_T, const KD
     // Reserve space in memory to avoid additional allocations on runtime.
     solutions.reserve(soln);
 
-/**/KDL::Frame H_S_T_0 = poe.getTransform(); //H_S_T_0?
+/**/const KDL::Frame & H_S_T_0 = poe.getTransform(); //H_S_T_0?
 
     // Insert a dummy value to avoid accessing an empty vector.
     solutions.emplace_back(poe.size());
@@ -121,7 +121,7 @@ std::vector<bool> ScrewTheoryIkProblem::solve(const KDL::Frame & H_S_T, const KD
             // Actually solve each subproblem, use current right-hand side of PoE to obtain
             // the right-hand side of said subproblem. Local reachability is common to all
             // partial solutions, and will be and-ed with the global reachability status.
-            bool reachable = subproblem->solve(rhsFrames[i], H, referenceValues, partialSolutions) & reachability[i];
+            bool reachable = subproblem->solve(rhsFrames[i], H, referenceValues, partialSolutions, H_S_T_0, solutions[i]) & reachability[i];
 
             // The global number of solutions is increased by this step.
             if (partialSolutions.size() > 1)

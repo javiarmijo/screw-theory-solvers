@@ -448,9 +448,14 @@ public:
      * @param q2  Index for the second joint.
      * 
      */
-    Algebraic_UR(const int & q1, const int & q2);
+    Algebraic_UR(const int & j1, const int & j2);
 
-    bool solve(const KDL::Frame & rhs, const KDL::Frame & pointTransform, const JointConfig & reference, Solutions & solutions) const override;
+    bool solve(const KDL::Frame & rhs, const KDL::Frame & pointTransform, const JointConfig & reference, Solutions & solutions, const KDL::Frame & H_S_T_0, const KDL::JntArray & c_solutions) const override;
+
+    bool solve(const KDL::Frame & rhs, const KDL::Frame & pointTransform, const JointConfig & reference, Solutions & solutions) const override
+    {
+        return false;
+    }
 
     int solutions() const override
     { return 1; }
@@ -459,7 +464,7 @@ public:
     { return "AA"; }
 
 private:
-    const int q1, q2;
+    const int j1, j2;
 };
 
 } // namespace roboticslab

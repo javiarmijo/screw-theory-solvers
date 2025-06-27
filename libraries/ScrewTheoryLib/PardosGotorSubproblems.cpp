@@ -578,17 +578,17 @@ bool PardosGotorThree_2::solve(const KDL::Frame & rhs, const KDL::Frame & pointT
     return KDL::Equal(u_w, v_w) && KDL::Equal(u_p.Norm(), v_p.Norm());
 
 }
-/*
+
 // -----------------------------------------------------------------------------
 
-Algebraic_UR::Algebraic_UR(const int & _q1, const int & _q2) //RECIBE ENTEROS CON LAS POSICIONES DE LAS ARTICULACIONES RESUELTAS
-    : q1(_q1),
-      q2(_q2)
+Algebraic_UR::Algebraic_UR(const int & _j1, const int & _j2) //RECIBE ENTEROS CON LAS POSICIONES DE LAS ARTICULACIONES RESUELTAS
+    : j1(_j1),
+      j2(_j2)
 {}
 
 // -----------------------------------------------------------------------------
 
-bool Algebraic_UR::solve(const KDL::Frame & rhs, const KDL::Frame & pointTransform, const JointConfig & reference, Solutions & solutions, KDL::Frame & H_S_T_0, Solutions & c_solutions) const
+bool Algebraic_UR::solve(const KDL::Frame & rhs, const KDL::Frame & pointTransform, const JointConfig & reference, Solutions & solutions, const KDL::Frame & H_S_T_0, const KDL::JntArray & c_solutions) const
 {   
     //TIENE QUE RECIBIR SOLUTIONS Y H_S_T_0
 
@@ -597,12 +597,11 @@ bool Algebraic_UR::solve(const KDL::Frame & rhs, const KDL::Frame & pointTransfo
     double ox = H_S_T_0(0, 1); 
     double oy = H_S_T_0(1, 1);
 
-    double theta = atan2((ox * sin(c_solutions[0][q1]) - oy * cos(c_solutions[0][q1])) / sin(c_solutions[0][q2]) ,(ny * cos(c_solutions[0][q1]) - nx * sin(c_solutions[0][q1]) / sin(c_solutions[0][q2])));
+    double theta = atan2((ox * sin(c_solutions(j1)) - oy * cos(c_solutions(j1))) / sin(c_solutions(j2)) ,(ny * cos(c_solutions(j1)) - nx * sin(c_solutions(j1)) / sin(c_solutions(j2))));
 
-     solutions = {{normalizeAngle(theta)}};
+    solutions = {{normalizeAngle(theta)}};
 
-     return true; //???????????
+    return true; //???????????
 }
 
 // -----------------------------------------------------------------------------
-*/
