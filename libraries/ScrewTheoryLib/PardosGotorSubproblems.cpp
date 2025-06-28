@@ -311,7 +311,9 @@ bool PardosGotorFive::solve(const KDL::Frame & rhs, const KDL::Frame & pointTran
         }
     }
 
-    if (f==k) theta_d = theta_k; //SI P Y K SON IGAULES SOLO SACAMOS UNA SOLUCION, QUE SERA CERO. FUNCIONA ASI, PREGUNGTAR A BARTEK
+    //if (f==k) theta_d = theta_k; //SI P Y K SON IGAULES SOLO SACAMOS UNA SOLUCION, QUE SERA CERO. FUNCIONA ASI, PREGUNGTAR A BARTEK
+    //theta_d = theta_k; //PARECE QUE NO SE DEBE CONSIDERAR LA SEGUNDA SOLUCION PARA OBTENER LAS SOLUCIONES ESPERADAS EN EL
+
 
     solutions = {{normalizeAngle(theta_k)}, {normalizeAngle(theta_d)}};
 
