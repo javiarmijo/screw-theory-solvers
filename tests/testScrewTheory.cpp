@@ -351,7 +351,8 @@ public:
         ///*
         for (const auto & solution : solutions)
         {
-            std::cout << solution(0) << " " << solution(1) << " " << solution(2) << " " << solution(3) << " " << solution(4) << " " << solution(5) << std::endl;
+            std::cout << "Soluciones obtenidas" << solution(0) << " " << solution(1) << " " << solution(2) << " " << solution(3) << " " << solution(4) << " " << solution(5) << std::endl;
+            std::cout << "Soluciones esperadas" << q(0) << " " << q(1) << " " << solution(2) << " " << solution(3) << " " << solution(4) << " " << solution(5) << std::endl;
         }
         //*/
 
@@ -366,7 +367,7 @@ public:
 
             KDL::Frame H_S_T_q_ST_validate;
             ASSERT_TRUE(poe.evaluate(solution, H_S_T_q_ST_validate));
-
+///*
             std::cout << "Traslación (H_S_T_q_ST): ["
               << H_S_T_q_ST.p.x() << ", "
               << H_S_T_q_ST.p.y() << ", "
@@ -401,7 +402,7 @@ public:
                 std::cout << "]" << std::endl;
             }
 
-
+//*/
             ASSERT_EQ(H_S_T_q_ST_validate, H_S_T_q_ST);
 
             if (solution == q)
@@ -1305,15 +1306,39 @@ TEST_F(ScrewTheoryTest, PardosGotorFive)
     PardosGotorFive pg5b(exp, exp2, p2);
 
     KDL::Frame rhs2(k - p2);
-    ASSERT_TRUE(pg5b.solve(rhs, KDL::Frame::Identity(), actual));
+    ASSERT_TRUE(pg5b.solve(rhs2, KDL::Frame::Identity(), actual));
 
     expected = {
-        {-1.11869},
-        {2.284517},
+        {-1.138451},
+        {2.304278},
     };
 
     checkSolutions(actual, expected);
+///*
+    //Ejemplo UR
 
+    KDL::Vector p3(0.838, 0.174, 0.061);
+    KDL::Vector k3(0.838, 0.174, 0.061);
+
+    MatrixExponential exp_b(MatrixExponential::ROTATION, {0, 0, 1}, {0, 0, 0});
+    MatrixExponential exp2_b(MatrixExponential::ROTATION, {0, 1, 0}, {0, 0, 0});
+
+    PardosGotorFive pg5c(exp_b, exp2_b, p3);
+
+    KDL::Frame rhs3(k3 - p3);
+
+    ASSERT_TRUE(pg5c.solve(rhs3, KDL::Frame::Identity(), actual));
+
+    expected = {
+        {0},
+        {0},
+    };
+
+    std::cout << " expected 1  = " << expected[0][0] << " " << expected[1][0] << "  \n";
+    std::cout << " actual 1  = " << actual[0][0] << " " << actual[1][0] << "  \n";
+
+    checkSolutions(actual, expected);
+//*/
 }
 
 TEST_F(ScrewTheoryTest, PardosGotorSix)

@@ -270,13 +270,15 @@ bool PardosGotorFive::solve(const KDL::Frame & rhs, const KDL::Frame & pointTran
     KDL::Vector v_p = v - v_w;
 
     double theta_k = reference[0];
-/*MIRAR*/    double theta_d = reference[0]; //no sería [1]? para que sirve reference????
+    double theta_d = reference[0];
 
     if (!KDL::Equal(u_p.Norm(), 0.0) && !KDL::Equal(v_p.Norm(), 0.0))
     {
+        std::cout<<"calcula?\n";
         theta_k = std::atan2(KDL::dot(exp.getAxis(), u_p * v_p), KDL::dot(u_p, v_p));
         theta_d= theta_k - KDL::PI;
     }
+        //theta_d= theta_k - KDL::PI;
 
     //Ajuste PG5
 
@@ -284,15 +286,23 @@ bool PardosGotorFive::solve(const KDL::Frame & rhs, const KDL::Frame & pointTran
     {
         if(!(KDL::Equal(exp_next.getAxis().data[i],0)))
         {
+            std::cout<<"entra?\n";
             float x = dot(f - exp.getOrigin(), exp_next.getAxis());
             if(x != 0)
             {
+                std::cout<<"ajusta?\n";
                 double d = f.data[i];//es la distancia que estará desplazado el plano con respecto al plano de movimiento
 
                 //Recalcula los ángulso con el ajuste
 
+                std::cout <<"clamp(d / v_p.Norm()) = " << d / v_p.Norm() <<"\n";
+                std::cout <<"clamp(d / u_p.Norm()) = " << d / u_p.Norm() <<"\n";
+
                 double sin1 = std::clamp(d / v_p.Norm(), -1.0, 1.0);//acota el valor entre -1 y 1
                 double sin2 = std::clamp(d / u_p.Norm(), -1.0, 1.0);
+
+                std::cout << "theta_k = " << theta_k << "\n";
+                std::cout << "theta_d = " << theta_d << "\n";
 
                 theta_k = theta_k - std::asin(sin1) + std::asin(sin2);
                 theta_d = theta_d + std::asin(sin1) + std::asin(sin2);
@@ -301,7 +311,11 @@ bool PardosGotorFive::solve(const KDL::Frame & rhs, const KDL::Frame & pointTran
         }
     }
 
+    if (f==k) theta_d = theta_k; //SI P Y K SON IGAULES SOLO SACAMOS UNA SOLUCION, QUE SERA CERO. FUNCIONA ASI, PREGUNGTAR A BARTEK
+
     solutions = {{normalizeAngle(theta_k)}, {normalizeAngle(theta_d)}};
+
+    std::cout << "Solutions = {" << normalizeAngle(theta_k) << "}, {" << normalizeAngle(theta_d) << "}\n";
 
     //return KDL::Equal(u_w, v_w);// && KDL::Equal(u_p.Norm(), v_p.Norm()); eso sería para pk1
 
