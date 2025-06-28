@@ -410,6 +410,7 @@ ScrewTheoryIkProblem::JointIdsToSubproblem ScrewTheoryIkProblemBuilder::trySolve
 
                 poeTerms[lastExpId_pg3].known = true;
                 return {{lastExpId_pg3}, new PardosGotorThreePadenKahanOne(exp_pg3, exp_pk1, testPoints[0], point)};
+                //return {{lastExpId_pg3}, new PardosGotorThreePadenKahanOne(exp_pg3, exp_pk1, KDL::Vector(0.838, 0.364, 0.061), point)};
             }
             else if (knownsCount == 2)
             {

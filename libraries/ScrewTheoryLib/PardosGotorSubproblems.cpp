@@ -4,6 +4,8 @@
 
 #include "ScrewTheoryTools.hpp"
 
+#include <iostream>
+
 using namespace roboticslab;
 
 // -----------------------------------------------------------------------------
@@ -102,19 +104,22 @@ bool PardosGotorThree::solve(const KDL::Frame & rhs, const KDL::Frame & pointTra
     bool sq2_zero = KDL::Equal(sq2, 0.0);
 
     bool ret;
-
+    std::cout << "sq2 = " << sq2 <<"\n";
     if (!sq2_zero && sq2 > 0)
     {
+        std::cout <<"entra al if de pg3, por lo que ret es true\n";
         double sq = std::sqrt(std::abs(sq2));
         solutions = {{dotPr + sq}, {dotPr - sq}};
         ret = true;
     }
     else
     {
+        std::cout <<"entra al else de pg3\n";
         KDL::Vector proy = vectorPow2(exp.getAxis()) * diff;
         double norm = proy.Norm();
         solutions = {{norm}, {norm}};
         ret = sq2_zero;
+        if(ret) std::cout <<"pero ret es true\n";
     }
 
     return ret;
@@ -545,6 +550,24 @@ PardosGotorThreePadenKahanOne::PardosGotorThreePadenKahanOne(const MatrixExponen
 
 bool PardosGotorThreePadenKahanOne::solve(const KDL::Frame & rhs, const KDL::Frame & pointTransform, const JointConfig & reference, Solutions & solutions) const
 {
+    std::cout <<"p = (" << p.x() << ", " << p.y() << ", " << p.z() << ")\n";
+    std::cout <<"k = (" << k.x() << ", " << k.y() << ", " << k.z() << ")\n";
+
+    std::cout << "Rotation matrix (R):\n";
+    for (int i = 0; i < 3; ++i) {
+        std::cout << "[ ";
+        for (int j = 0; j < 3; ++j) {
+            std::cout << rhs.M(i, j) << " ";
+        }
+        std::cout << "]\n";
+    }
+
+    // Imprimir el vector de traslación
+    std::cout << "Translation vector (p): [ "
+              << rhs.p[0] << ", "
+              << rhs.p[1] << ", "
+              << rhs.p[2] << " ]\n";
+
     KDL::Vector k2p = rhs * p;
 
     PardosGotorThree pg3(exp_pg3, p, k);
@@ -552,7 +575,11 @@ bool PardosGotorThreePadenKahanOne::solve(const KDL::Frame & rhs, const KDL::Fra
 
     bool pg3_ret = pg3.solve(rhs, pointTransform, reference, pg3_sols);
 
-    if(pg3_ret) return false;
+    std::cout <<"holaaaaaaaaaaaaaaa? \n";
+
+    if(!pg3_ret) return false;
+
+    std::cout<<"llega aqui??  \n";
 
     KDL::Vector k2 = k2p + exp_pg3.getAxis() * pg3_sols[0][1];
     KDL::Vector f = pointTransform * p;
@@ -573,9 +600,15 @@ bool PardosGotorThreePadenKahanOne::solve(const KDL::Frame & rhs, const KDL::Fra
         theta = std::atan2(KDL::dot(exp_pk1.getAxis(), u_p * v_p), KDL::dot(u_p, v_p));
     }
 
+    std::cout<<"tetha = " << theta << "\n";
+    std::cout<<"tetha normalised = " << normalizeAngle(theta) << "\n";
+    std::cout<<"--tetha = " << -theta << "\n";
+    std::cout<<"-tetha normalised = " << normalizeAngle(-theta) << "\n";
+
+
     solutions = {{normalizeAngle(theta)}, {normalizeAngle(-theta)}};
 
-    return KDL::Equal(u_w, v_w) && KDL::Equal(u_p.Norm(), v_p.Norm());
+   return KDL::Equal(u_w, v_w) && KDL::Equal(u_p.Norm(), v_p.Norm());
 
 }
 
@@ -597,7 +630,28 @@ bool Algebraic_UR::solve(const KDL::Frame & rhs, const KDL::Frame & pointTransfo
     double ox = H_S_T_0(0, 1);
     double oy = H_S_T_0(1, 1);
 
-    double theta = atan2((ox * sin(c_solutions(j1)) - oy * cos(c_solutions(j1))) / sin(c_solutions(j2)) ,(ny * cos(c_solutions(j1)) - nx * sin(c_solutions(j1)) / sin(c_solutions(j2))));
+
+    std::cout <<"nx = " << nx << "\n";
+    std::cout <<"ny = " << ny << "\n";
+    std::cout <<"ox = " << ox << "\n";
+    std::cout <<"oy = " << oy << "\n";
+    std::cout << "c_solutions(j1)= " << c_solutions(j1) <<"\n";
+    std::cout << "c_solutions(j2)= " << c_solutions(j2) <<"\n";
+
+    double theta = reference[0];
+
+    if(sin(c_solutions(j2)) != 0) theta = atan2((ox * sin(c_solutions(j1)) - oy * cos(c_solutions(j1))) / sin(c_solutions(j2)) ,(ny * cos(c_solutions(j1)) - nx * sin(c_solutions(j1)) / sin(c_solutions(j2))));
+
+    /*
+    std::cout << "solutions = ( ";
+    for(int i=0; i < c_solutions.rows(); i ++)
+    {
+        std::cout << c_solutions(i)<< "  ";
+    }
+    std::cout << "\n";
+    */
+    std::cout << "tetha= " << theta <<"\n";
+    std::cout << "tetha normalised= " << normalizeAngle(theta) <<"\n";
 
     solutions = {{normalizeAngle(theta)}};
 

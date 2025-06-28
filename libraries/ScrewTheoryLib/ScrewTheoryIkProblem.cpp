@@ -4,6 +4,7 @@
 
 #include <numeric> // std::accumulate
 #include <vector>
+#include <iostream>
 
 #include "ScrewTheoryTools.hpp"
 
@@ -122,6 +123,9 @@ std::vector<bool> ScrewTheoryIkProblem::solve(const KDL::Frame & H_S_T, const KD
             // the right-hand side of said subproblem. Local reachability is common to all
             // partial solutions, and will be and-ed with the global reachability status.
             bool reachable = subproblem->solve(rhsFrames[i], H, referenceValues, partialSolutions, H_S_T_0, solutions[i]) & reachability[i];
+
+            if(reachable) std::cout <<"Solution of subproblem " << subproblem->describe() << " reachable\n";
+            else std::cout <<"Solution of subproblem " << subproblem->describe() << " NOT reachable\n";
 
             // The global number of solutions is increased by this step.
             if (partialSolutions.size() > 1)
