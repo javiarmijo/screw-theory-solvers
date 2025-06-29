@@ -152,8 +152,8 @@ std::vector<bool> ScrewTheoryIkProblem::solve(const KDL::Frame & H_S_T, const KD
             // Actually solve each subproblem, use current right-hand side of PoE to obtain
             // the right-hand side of said subproblem. Local reachability is common to all
             // partial solutions, and will be and-ed with the global reachability status.
-            std::cout << "\nSolución PG5 = " <<solutions[i](0) << "\n\n";
-            bool reachable = subproblem->solve(rhsFrames[i], H, referenceValues, partialSolutions, H_S_T_0, solutions[i]) & reachability[i];
+            std::cout << "\nSolución PG5 = " <<solutions[i](4) << "\n\n";
+            bool reachable = subproblem->solve(rhsFrames[i], H, referenceValues, partialSolutions, H_S_T, solutions[i]) & reachability[i];
 
             if(reachable) std::cout <<"Solution of subproblem " << subproblem->describe() << " reachable\n";
             else std::cout <<"Solution of subproblem " << subproblem->describe() << " NOT reachable\n";

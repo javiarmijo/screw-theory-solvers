@@ -759,10 +759,32 @@ bool Algebraic_UR::solve(const KDL::Frame & rhs, const KDL::Frame & pointTransfo
     std::cout <<"oy = " << oy << "\n";
     std::cout << "c_solutions(j1)= " << c_solutions(j1) <<"\n";
     std::cout << "c_solutions(j2)= " << c_solutions(j2) <<"\n";
+    std::cout << "s1= " << sin(c_solutions(j1)) <<"\n";
+     std::cout << "s1_rounded= " << std::round(std::sin(c_solutions(j1)) * 1e4) / 1e4 <<"\n";
+    std::cout << "c1= " << cos(c_solutions(j1)) <<"\n";
+    std::cout << "s5= " << sin(c_solutions(j2)) <<"\n";
 
     double theta = reference[0];
 
-    if(sin(c_solutions(j2)) != 0) theta = atan2((ox * sin(c_solutions(j1)) - oy * cos(c_solutions(j1))) / sin(c_solutions(j2)) ,(ny * cos(c_solutions(j1)) - nx * sin(c_solutions(j1)) / sin(c_solutions(j2))));
+    //if(sin(c_solutions(j2)) != 0) theta = atan2((ox * sin(c_solutions(j1)) - oy * cos(c_solutions(j1))) / sin(c_solutions(j2)) ,(ny * cos(c_solutions(j1)) - nx * sin(c_solutions(j1)) / sin(c_solutions(j2))));
+    ///*
+    if(sin(c_solutions(j2)) != 0) 
+    {
+        theta = std::round(
+            std::atan2(
+                std::round((
+                    std::round(ox * 1e4) / 1e4 * std::round(std::sin(c_solutions(j1)) * 1e4) / 1e4 -
+                    std::round(oy * 1e4) / 1e4 * std::round(std::cos(c_solutions(j1)) * 1e4) / 1e4
+                ) / (std::round(std::sin(c_solutions(j2)) * 1e4) / 1e4) * 1e4) / 1e4,
+
+                std::round((
+                    std::round(ny * 1e4) / 1e4 * std::round(std::cos(c_solutions(j1)) * 1e4) / 1e4 -
+                    std::round(nx * 1e4) / 1e4 * std::round(std::sin(c_solutions(j1)) * 1e4) / 1e4
+                ) / (std::round(std::sin(c_solutions(j2)) * 1e4) / 1e4) * 1e4) / 1e4
+            ) * 1e4
+        ) / 1e4;
+    }
+    //*/
 
     /*
     std::cout << "solutions = ( ";
