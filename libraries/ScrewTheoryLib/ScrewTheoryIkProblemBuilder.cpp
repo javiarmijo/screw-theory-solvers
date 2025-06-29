@@ -409,8 +409,12 @@ ScrewTheoryIkProblem::JointIdsToSubproblem ScrewTheoryIkProblemBuilder::trySolve
                 const MatrixExponential & lastExp_pg3 = poe.exponentialAtJoint(lastExpId_pg3);
 
                 poeTerms[lastExpId_pg3].known = true;
-                return {{lastExpId_pg3}, new PardosGotorThreePadenKahanOne(exp_pg3, exp_pk1, testPoints[0], point)};
-                //return {{lastExpId_pg3}, new PardosGotorThreePadenKahanOne(exp_pg3, exp_pk1, KDL::Vector(0.838, 0.364, 0.061), point)};
+
+                std::cout << "exp_pg3.getAxis() = (" << exp_pg3.getAxis().x() << ", " << exp_pg3.getAxis().y() << ", " << exp_pg3.getAxis().z() << ") \n";
+                std::cout << "exp_pk1.getAxis() = (" << exp_pk1.getAxis().x() << ", " << exp_pk1.getAxis().y() << ", " << exp_pk1.getAxis().z() << ") \n";
+
+                //return {{lastExpId_pg3}, new PardosGotorThreePadenKahanOne(exp_pg3, exp_pk1, testPoints[0], point)};
+                return {{lastExpId_pg3}, new PardosGotorThreePadenKahanOne(exp_pg3, exp_pk1, KDL::Vector(0.838, 0.364, 0.061), point)};
             }
             else if (knownsCount == 2)
             {
@@ -917,6 +921,11 @@ bool ScrewTheoryIkProblemBuilder::simplifyWithPardosThree(MatrixExponential & ex
                         exp1 = exp7;
                         exp2 = lastExp;
                         point = lastExp.getOrigin();
+
+                        std::cout << "exp1.getAxis() = (" << exp1.getAxis().x() << ", " << exp1.getAxis().y() << ", " << exp1.getAxis().z() << ") \n";
+                        std::cout << "exp7.getAxis() = (" << exp7.getAxis().x() << ", " << exp7.getAxis().y() << ", " << exp7.getAxis().z() << ") \n";
+                        std::cout << "lastExp.getAxis() = (" << lastExp.getAxis().x() << ", " << lastExp.getAxis().y() << ", " << lastExp.getAxis().z() << ") \n";
+                        std::cout << "exp2.getAxis() = (" << exp2.getAxis().x() << ", " << exp2.getAxis().y() << ", " << exp2.getAxis().z() << ") \n";
 
                         return true;
                     }

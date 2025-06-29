@@ -95,12 +95,22 @@ bool PardosGotorThree::solve(const KDL::Frame & rhs, const KDL::Frame & pointTra
 {
     KDL::Vector f = pointTransform * p;
     KDL::Vector rhsAsVector = rhs * p - k;
+
+    std::cout<<"f = (" << f.x() << ", " << f.y() << ", " << f.z() << ")\n";
+    std::cout<<"pp = (" << (rhs * p).x() << ", " << (rhs * p).y() << ", " << (rhs * p).z() << ")\n";
+    std::cout<<"pg = (" << k.x() << ", " << k.y() << ", " << k.z() << ")\n";
     double delta = rhsAsVector.Norm();
+    std::cout << "delta = " << delta <<"\n";
 
     KDL::Vector diff = k - f;
+    std::cout<<"kmp = (" << diff.x() << ", " << diff.y() << ", " << diff.z() << ")\n";
 
     double dotPr = KDL::dot(exp.getAxis(), diff);
+    std::cout << "kmpp = " << dotPr << "\n";
+
     double sq2 = std::pow(dotPr, 2) - std::pow(diff.Norm(), 2) + std::pow(delta, 2);
+    std::cout << "root = " << sq2 << "\n";
+
     bool sq2_zero = KDL::Equal(sq2, 0.0);
 
     bool ret;
@@ -121,6 +131,8 @@ bool PardosGotorThree::solve(const KDL::Frame & rhs, const KDL::Frame & pointTra
         ret = sq2_zero;
         if(ret) std::cout <<"pero ret es true\n";
     }
+
+    std::cout << "solutions_pg3 = {" << solutions[0][0] << ", " << solutions[1][0] << "}\n";
 
     return ret;
 }
@@ -565,43 +577,131 @@ PardosGotorThreePadenKahanOne::PardosGotorThreePadenKahanOne(const MatrixExponen
 // -----------------------------------------------------------------------------
 
 bool PardosGotorThreePadenKahanOne::solve(const KDL::Frame & rhs, const KDL::Frame & pointTransform, const JointConfig & reference, Solutions & solutions) const
-{
-    std::cout <<"p = (" << p.x() << ", " << p.y() << ", " << p.z() << ")\n";
-    std::cout <<"k = (" << k.x() << ", " << k.y() << ", " << k.z() << ")\n";
+{   
+    std::cout << "exp_pg3.getAxis() = (" << exp_pg3.getAxis().x() << ", " << exp_pg3.getAxis().y() << ", " << exp_pg3.getAxis().z() << ")\n";
+    std::cout << "exp_pk1.getAxis() = (" << exp_pk1.getAxis().x() << ", " << exp_pk1.getAxis().y() << ", " << exp_pk1.getAxis().z() << ")\n";
 
-    std::cout << "Rotation matrix (R):\n";
+     std::cout << "\nRotación RHS PG3_PK1:" << std::endl;
     for (int i = 0; i < 3; ++i) {
-        std::cout << "[ ";
+        std::cout << "  [ ";
         for (int j = 0; j < 3; ++j) {
             std::cout << rhs.M(i, j) << " ";
         }
-        std::cout << "]\n";
+        std::cout << "]" << std::endl;
     }
 
-    // Imprimir el vector de traslación
-    std::cout << "Translation vector (p): [ "
-              << rhs.p[0] << ", "
-              << rhs.p[1] << ", "
-              << rhs.p[2] << " ]\n";
+    std::cout << "Traslación RHS PG3_PK1: [ "
+              << rhs.p.x() << ", "
+              << rhs.p.y() << ", "
+              << rhs.p.z() << " ]\n" << std::endl;
 
+    KDL::Vector f = pointTransform * p;
     KDL::Vector k2p = rhs * p;
 
-    PardosGotorThree pg3(exp_pg3, p, k);
+    std::cout << "k2p = (" << k2p.x() << ", " << k2p.y() << ", " << k2p.z() <<")\n";
+    std::cout << "p = (" << p.x() << ", " << p.y() << ", " << p.z() <<")\n";
+    std::cout << "f = (" << f.x() << ", " << f.y() << ", " << f.z() <<")\n";
+    std::cout << "k = (" << k.x() << ", " << k.y() << ", " << k.z() <<")\n";
+
+    //PardosGotorThree pg3(exp_pg3, k2p, k);
+    //PardosGotorThree pg3(exp_pg3, KDL::Vector(k2p.x(), k2p.y(), 0), KDL::Vector(k.x(), k.y(), 0));//EN MATLAB PARDOS LO HACE ASI
     Solutions pg3_sols;
 
-    bool pg3_ret = pg3.solve(rhs, pointTransform, reference, pg3_sols);
+    //bool pg3_ret = pg3.solve(rhs, pointTransform, reference, pg3_sols);
+    //bool pg3_ret = pg3.solve(KDL::Frame::Identity(), pointTransform, reference, pg3_sols);
 
     std::cout <<"holaaaaaaaaaaaaaaa? \n";
 
+    //if(!pg3_ret) return false;
+
+    //PG3
+
+    //KDL::Vector f = pointTransform * p;
+    KDL::Vector rhsAsVector = f - k;
+
+    std::cout<<"f = (" << f.x() << ", " << f.y() << ", " << f.z() << ")\n";
+    std::cout<<"pp = (" << (rhs * p).x() << ", " << (rhs * p).y() << ", " << (rhs * p).z() << ")\n";
+    std::cout<<"pg = (" << k.x() << ", " << k.y() << ", " << k.z() << ")\n";
+    std::cout<<"rhsAsVector = (" << rhsAsVector.x() << ", " << rhsAsVector.y() << ", " << rhsAsVector.z() << ")\n";
+    double delta = rhsAsVector.Norm();
+    std::cout << "delta = " << delta <<"\n";
+
+    
+    //KDL::Vector diff = k - k2p;
+    KDL::Vector diff = KDL::Vector(k.x(), k.y(), 0.0) - KDL::Vector(k2p.x(), k2p.y(), 0.0);
+    std::cout<<"kmp = (" << diff.x() << ", " << diff.y() << ", " << diff.z() << ")\n";
+
+    double dotPr = KDL::dot(exp_pg3.getAxis(), diff);
+    std::cout << "kmpp = " << dotPr << "\n";
+
+    double sq2 = std::pow(dotPr, 2) - std::pow(diff.Norm(), 2) + std::pow(delta, 2);
+    std::cout << "root = " << sq2 << "\n";
+
+    bool sq2_zero = KDL::Equal(sq2, 0.0);
+
+    bool pg3_ret;
+    std::cout << "sq2 = " << sq2 <<"\n";
+    if (!sq2_zero && sq2 > 0)
+    {
+        std::cout <<"entra al if de pg3, por lo que ret es true\n";
+        double sq = std::sqrt(std::abs(sq2));
+        pg3_sols = {{dotPr + sq}, {dotPr - sq}};
+        pg3_ret = true;
+    }
+    else
+    {
+        std::cout <<"entra al else de pg3\n";
+        KDL::Vector proy = vectorPow2(exp_pg3.getAxis()) * diff;
+        double norm = proy.Norm();
+        pg3_sols = {{norm}, {norm}};
+        pg3_ret = sq2_zero;
+        if(pg3_ret) std::cout <<"pero ret es true\n";
+    }
+
+    std::cout << "solutions_pg3 = {" << pg3_sols[0][0] << ", " << pg3_sols[1][0] << "}\n";
+
     if(!pg3_ret) return false;
+
+
+    //FIN PG3
+
+
 
     std::cout<<"llega aqui??  \n";
 
-    KDL::Vector k2 = k2p + exp_pg3.getAxis() * pg3_sols[0][1];
-    KDL::Vector f = pointTransform * p;
+    KDL::Vector k2 = k2p + exp_pg3.getAxis() * pg3_sols[1][0];
+    std::cout << "k2 = (" << k2.x() << ", " << k2.y() << ", " << k2.z() <<")\n";
+    
+    std::cout << "pg3_sols[0][0] = " << pg3_sols[0][0] << "\n"; 
+    std::cout << "pg3_sols[0][1] = " << pg3_sols[0][1] << "\n"; 
+    std::cout << "pg3_sols[1][0] = " << pg3_sols[1][0] << "\n"; 
+    std::cout << "pg3_sols[1][1] = " << pg3_sols[1][1] << "\n"; 
+
+    std::cout << "k2p = (" << k2p.x() << ", " << k2p.y() << ", " << k2p.z() <<")\n";
+    std::cout << "k2 = (" << k2.x() << ", " << k2.y() << ", " << k2.z() <<")\n";
+
+    std::cout << "exp_pk1.getOrigin() = (" << exp_pk1.getOrigin().x() << ", " << exp_pk1.getOrigin().y() << ", " << exp_pk1.getOrigin().z() << ")\n";
 
     KDL::Vector u = f - exp_pk1.getOrigin();
     KDL::Vector v = k2 - exp_pk1.getOrigin();
+
+    std::cout << "u = (" << u.x() << ", " << u.y() << ", " << u.z() <<")\n";
+    std::cout << "v = (" << v.x() << ", " << v.y() << ", " << v.z() <<")\n";
+
+    /*
+    for(int i=0; i < 3; i++)
+    {
+        if(exp_pk1.getAxis().data[i]!=0) v.data[i]=u.data[i];
+    }
+    */
+
+    //v.data[1] = u.data[1];
+
+    std::cout << "u = (" << u.x() << ", " << u.y() << ", " << u.z() <<")\n";
+    std::cout << "v = (" << v.x() << ", " << v.y() << ", " << v.z() <<")\n";
+
+    std::cout << "v.data[1] = " << v.data[1] << "\n";
+    std::cout << "u.data[1] = " << u.data[1] << "\n";
 
     KDL::Vector u_w = axisPow * u;
     KDL::Vector v_w = axisPow * v;
@@ -610,6 +710,11 @@ bool PardosGotorThreePadenKahanOne::solve(const KDL::Frame & rhs, const KDL::Fra
     KDL::Vector v_p = v - v_w;
 
     double theta = reference[0];
+
+    std::cout << "u_p.Norm() = " << u_p.Norm() <<"\n";
+    std::cout << "v_p.Norm() = " << v_p.Norm() <<"\n";
+    std::cout << "u_w = (" << u_w.x() << ", " << u_w.y() << ", " << u_w.z() <<")\n";
+    std::cout << "v_w = (" << v_w.x() << ", " << v_w.y() << ", " << v_w.z() <<")\n";
 
     if (!KDL::Equal(u_p.Norm(), 0.0) && !KDL::Equal(v_p.Norm(), 0.0))
     {
@@ -621,6 +726,7 @@ bool PardosGotorThreePadenKahanOne::solve(const KDL::Frame & rhs, const KDL::Fra
     std::cout<<"--tetha = " << -theta << "\n";
     std::cout<<"-tetha normalised = " << normalizeAngle(-theta) << "\n";
 
+    //theta=reference[0];//PUEDE SER UTIL
 
     solutions = {{normalizeAngle(theta)}, {normalizeAngle(-theta)}};
 
@@ -643,8 +749,8 @@ bool Algebraic_UR::solve(const KDL::Frame & rhs, const KDL::Frame & pointTransfo
 
     double nx = H_S_T_0.M(0, 0);
     double ny = H_S_T_0.M(1, 0);
-    double ox = H_S_T_0(0, 1);
-    double oy = H_S_T_0(1, 1);
+    double ox = H_S_T_0.M(0, 1);
+    double oy = H_S_T_0.M(1, 1);
 
 
     std::cout <<"nx = " << nx << "\n";
@@ -668,6 +774,8 @@ bool Algebraic_UR::solve(const KDL::Frame & rhs, const KDL::Frame & pointTransfo
     */
     std::cout << "tetha= " << theta <<"\n";
     std::cout << "tetha normalised= " << normalizeAngle(theta) <<"\n";
+
+    //theta=reference[0];//PUEDE SER UTIL
 
     solutions = {{normalizeAngle(theta)}};
 
