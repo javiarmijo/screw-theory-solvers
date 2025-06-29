@@ -181,6 +181,7 @@ bool PardosGotorFour::solve(const KDL::Frame & rhs, const KDL::Frame & pointTran
 
     if (!c_zero && c_test > 0.0 && u_p_norm > 0.0 && v_p_norm > 0.0)
     {
+        std::cout<<"if pg4\n";
         KDL::Vector omega_a = c_diff / c_norm;
         KDL::Vector omega_h = exp1.getAxis() * omega_a;
 
@@ -216,10 +217,16 @@ bool PardosGotorFour::solve(const KDL::Frame & rhs, const KDL::Frame & pointTran
             {normalizeAngle(theta1_2), normalizeAngle(theta2_2)}
         };
 
+        if(samePlane) std::cout<<"samePlane\n";
+        std::cout << "m1_p.Norm() = " << m1_p.Norm() << "\n";
+        std::cout << "v_p_norm = " << v_p_norm << "\n";
+
         return samePlane && KDL::Equal(m1_p.Norm(), v_p_norm);
     }
     else
     {
+        std::cout<<"else pg4\n";
+
         double theta1 = reference[0];
         double theta2 = reference[1];
 
@@ -645,7 +652,7 @@ bool PardosGotorThreePadenKahanOne::solve(const KDL::Frame & rhs, const KDL::Fra
     {
         std::cout <<"entra al if de pg3, por lo que ret es true\n";
         double sq = std::sqrt(std::abs(sq2));
-        pg3_sols = {{dotPr + sq}, {dotPr - sq}};
+        pg3_sols = {{normalizeAngle(dotPr + sq)}, {normalizeAngle(dotPr - sq)}};
         pg3_ret = true;
     }
     else
@@ -653,7 +660,7 @@ bool PardosGotorThreePadenKahanOne::solve(const KDL::Frame & rhs, const KDL::Fra
         std::cout <<"entra al else de pg3\n";
         KDL::Vector proy = vectorPow2(exp_pg3.getAxis()) * diff;
         double norm = proy.Norm();
-        pg3_sols = {{norm}, {norm}};
+        pg3_sols = {{normalizeAngle(norm)}, {normalizeAngle(norm)}};
         pg3_ret = sq2_zero;
         if(pg3_ret) std::cout <<"pero ret es true\n";
     }
@@ -721,6 +728,8 @@ bool PardosGotorThreePadenKahanOne::solve(const KDL::Frame & rhs, const KDL::Fra
         theta = std::atan2(KDL::dot(exp_pk1.getAxis(), u_p * v_p), KDL::dot(u_p, v_p));
     }
 
+    theta = normalizeAngle(theta);
+
     std::cout<<"tetha = " << theta << "\n";
     std::cout<<"tetha normalised = " << normalizeAngle(theta) << "\n";
     std::cout<<"--tetha = " << -theta << "\n";
@@ -728,7 +737,7 @@ bool PardosGotorThreePadenKahanOne::solve(const KDL::Frame & rhs, const KDL::Fra
 
     //theta=reference[0];//PUEDE SER UTIL
 
-    solutions = {{normalizeAngle(theta)}, {normalizeAngle(-theta)}};
+    solutions = {{theta}, {-theta}};
 
    return KDL::Equal(u_p.Norm(), v_p.Norm());//KDL::Equal(u_w, v_w) && COMENTADO
 
@@ -767,7 +776,8 @@ bool Algebraic_UR::solve(const KDL::Frame & rhs, const KDL::Frame & pointTransfo
     double theta = reference[0];
 
     //if(sin(c_solutions(j2)) != 0) theta = atan2((ox * sin(c_solutions(j1)) - oy * cos(c_solutions(j1))) / sin(c_solutions(j2)) ,(ny * cos(c_solutions(j1)) - nx * sin(c_solutions(j1)) / sin(c_solutions(j2))));
-    ///*
+    
+    /*
     if(sin(c_solutions(j2)) != 0) 
     {
         theta = std::round(
@@ -784,7 +794,26 @@ bool Algebraic_UR::solve(const KDL::Frame & rhs, const KDL::Frame & pointTransfo
             ) * 1e4
         ) / 1e4;
     }
-    //*/
+    */
+
+    
+    if(sin(c_solutions(j2)) != 0)
+    {
+        constexpr double epsilon = 1e-10;
+
+        double s1 = std::sin(c_solutions(j1));
+        double c1 = std::cos(c_solutions(j1));
+        double s2 = std::sin(c_solutions(j2)); 
+
+        double A = ox * s1 - oy * c1;
+        double B = ny * c1 - nx * s1;
+
+        double C = A / s2;
+        double D = B / s2;
+
+        theta = std::atan2(C, D); 
+    }
+    
 
     /*
     std::cout << "solutions = ( ";

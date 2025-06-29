@@ -402,7 +402,7 @@ public:
             }
 
 //*/
-           // ASSERT_EQ(H_S_T_q_ST_validate, H_S_T_q_ST);
+            ASSERT_EQ(H_S_T_q_ST_validate, H_S_T_q_ST);
 
             if (solution == q)
             {
@@ -418,8 +418,8 @@ public:
         const int numJoints = chain.getNrOfJoints();
 
         //checkRobotKinematicsInternal(chain, poe, fillJointValues(numJoints, 0.0), soln);
-        //checkRobotKinematicsInternal(chain, poe, fillJointValues(numJoints, 0.1), soln);
-        checkRobotKinematicsInternal(chain, poe, fillJointValues(numJoints, KDL::PI_2), soln);
+        checkRobotKinematicsInternal(chain, poe, fillJointValues(numJoints, 0.1), soln);
+        //checkRobotKinematicsInternal(chain, poe, fillJointValues(numJoints, KDL::PI_2), soln);
         //checkRobotKinematicsInternal(chain, poe, fillJointValues(numJoints, KDL::PI), soln);
     }
 
