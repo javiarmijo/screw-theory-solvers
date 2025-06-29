@@ -730,7 +730,7 @@ bool PardosGotorThreePadenKahanOne::solve(const KDL::Frame & rhs, const KDL::Fra
 
     solutions = {{normalizeAngle(theta)}, {normalizeAngle(-theta)}};
 
-   return KDL::Equal(u_w, v_w) && KDL::Equal(u_p.Norm(), v_p.Norm());
+   return KDL::Equal(u_p.Norm(), v_p.Norm());//KDL::Equal(u_w, v_w) && COMENTADO
 
 }
 
