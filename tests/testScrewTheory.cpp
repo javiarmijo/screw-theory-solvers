@@ -355,7 +355,7 @@ public:
         }
         //*/
 
-        //ASSERT_TRUE(std::all_of(reachability.begin(), reachability.end(), [](bool r) { return r; }));
+        ASSERT_TRUE(std::all_of(reachability.begin(), reachability.end(), [](bool r) { return r; }));
         delete ikProblem;
 
         bool match = false;
@@ -417,8 +417,8 @@ public:
     {
         const int numJoints = chain.getNrOfJoints();
 
-        //checkRobotKinematicsInternal(chain, poe, fillJointValues(numJoints, 0.0), soln);
-        checkRobotKinematicsInternal(chain, poe, fillJointValues(numJoints, 0.1), soln);
+        checkRobotKinematicsInternal(chain, poe, fillJointValues(numJoints, 0.0), soln);
+        //checkRobotKinematicsInternal(chain, poe, fillJointValues(numJoints, 0.1), soln);
         //checkRobotKinematicsInternal(chain, poe, fillJointValues(numJoints, KDL::PI_2), soln);
         //checkRobotKinematicsInternal(chain, poe, fillJointValues(numJoints, KDL::PI), soln);
     }
@@ -1270,6 +1270,27 @@ TEST_F(ScrewTheoryTest, PardosGotorFour)
     ASSERT_FALSE(pg4d.solve(rhs8, KDL::Frame::Identity(), expected[0], actual));
 
     checkSolutions(actual, expected);
+
+    KDL::Vector p7(0, 1, 0); 
+    KDL::Vector k7(2, 1, 2); 
+    PardosGotorFour pg4e(exp1, exp2, p7);
+    KDL::Frame rhs9(k7 - p7);
+
+    ASSERT_TRUE(pg4e.solve(rhs9, KDL::Frame::Identity(), actual));
+
+    expected = {
+        {KDL::PI_2, 0},
+        {KDL::PI_2, 0}
+    };
+
+    std::cout << " expected 1  = " << expected[0][0] << " " << expected[0][1] << "  \n";
+    std::cout << " actual 1  = " << actual[0][0] << " " << actual[0][1] << "  \n";
+
+    std::cout << " expected 2  = " << expected[1][0] << " " << expected[1][1] << "  \n";
+    std::cout << " actual 2  = " << actual[1][0] << " " << actual[1][1] << "  \n";
+
+    checkSolutions(actual, expected);
+
 }
 
 TEST_F(ScrewTheoryTest, PardosGotorFive)
@@ -1313,31 +1334,6 @@ TEST_F(ScrewTheoryTest, PardosGotorFive)
     };
 
     checkSolutions(actual, expected);
-///*
-    //Ejemplo UR
-
-    KDL::Vector p3(0.838, 0.174, 0.061);
-    KDL::Vector k3(0.838, 0.174, 0.061);
-
-    MatrixExponential exp_b(MatrixExponential::ROTATION, {0, 0, 1}, {0, 0, 0});
-    MatrixExponential exp2_b(MatrixExponential::ROTATION, {0, 1, 0}, {0, 0, 0});
-
-    PardosGotorFive pg5c(exp_b, exp2_b, p3);
-
-    KDL::Frame rhs3(k3 - p3);
-
-    ASSERT_TRUE(pg5c.solve(rhs3, KDL::Frame::Identity(), actual));
-
-    expected = {
-        {0},
-        {0},
-    };
-
-    std::cout << " expected 1  = " << expected[0][0] << " " << expected[1][0] << "  \n";
-    std::cout << " actual 1  = " << actual[0][0] << " " << actual[1][0] << "  \n";
-
-    checkSolutions(actual, expected);
-//*/
 }
 
 TEST_F(ScrewTheoryTest, PardosGotorSix)

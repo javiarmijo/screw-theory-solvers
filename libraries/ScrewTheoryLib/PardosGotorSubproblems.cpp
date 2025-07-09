@@ -154,6 +154,11 @@ bool PardosGotorFour::solve(const KDL::Frame & rhs, const KDL::Frame & pointTran
     KDL::Vector f = pointTransform * p;
     KDL::Vector k = rhs * p;
 
+    std::cout << "f = (" << f.x() << ", " << f.y() << ", " << f.z() << ")\n";
+    std::cout << "k = (" << k.x() << ", " << k.y() << ", " << k.z() << ")\n";
+    std::cout << "exp1.getOrigin() = (" << exp1.getOrigin().x() << ", " << exp1.getOrigin().y() << ", " << exp1.getOrigin().z() << ")\n";
+    std::cout << "exp2.getOrigin() = (" << exp2.getOrigin().x() << ", " << exp2.getOrigin().y() << ", " << exp2.getOrigin().z() << ")\n";
+
     KDL::Vector u = f - exp2.getOrigin();
     KDL::Vector v = k - exp1.getOrigin();
 
@@ -178,6 +183,11 @@ bool PardosGotorFour::solve(const KDL::Frame & rhs, const KDL::Frame & pointTran
 
     double c_test = u_p_norm + v_p_norm - c_norm;
     bool c_zero = KDL::Equal(c_test, 0.0);
+
+    std::cout << "u_p_norm = " << u_p_norm << "\n";
+    std::cout << "v_p_norm = " << v_p_norm << "\n";
+    std::cout << "exp1.getAxis() = (" << exp1.getAxis().x() << ", " << exp1.getAxis().y() << ", " << exp1.getAxis().z() << ")\n";
+    std::cout << "exp2.getAxis() = (" << exp2.getAxis().x() << ", " << exp2.getAxis().y() << ", " << exp2.getAxis().z() << ")\n";
 
     if (!c_zero && c_test > 0.0 && u_p_norm > 0.0 && v_p_norm > 0.0)
     {
@@ -218,8 +228,18 @@ bool PardosGotorFour::solve(const KDL::Frame & rhs, const KDL::Frame & pointTran
         };
 
         if(samePlane) std::cout<<"samePlane\n";
+        std::cout << "m1 = (" << m1.x() << ", " << m1.y() << ", " << m1.z() << ")\n";
+        std::cout << "m2 = (" << m2.x() << ", " << m2.y() << ", " << m2.z() << ")\n";
+        std::cout << "m1_p = (" << m1_p.x() << ", " << m1_p.y() << ", " << m1_p.z() << ")\n";
+        std::cout << "m2_p = (" << m2_p.x() << ", " << m2_p.y() << ", " << m2_p.z() << ")\n";
+        std::cout << "u = (" << u.x() << ", " << u.y() << ", " << u.z() << ")\n";
+        std::cout << "v = (" << v.x() << ", " << v.y() << ", " << v.z() << ")\n";
+        std::cout << "u_p = (" << u_p.x() << ", " << u_p.y() << ", " << u_p.z() << ")\n";
+        std::cout << "v_p = (" << v_p.x() << ", " << v_p.y() << ", " << v_p.z() << ")\n";
         std::cout << "m1_p.Norm() = " << m1_p.Norm() << "\n";
+        std::cout << "m2_p.Norm() = " << m2_p.Norm() << "\n";
         std::cout << "v_p_norm = " << v_p_norm << "\n";
+        std::cout << "u_p_norm = " << u_p_norm << "\n";
 
         return samePlane && KDL::Equal(m1_p.Norm(), v_p_norm);
     }
@@ -336,7 +356,8 @@ bool PardosGotorFive::solve(const KDL::Frame & rhs, const KDL::Frame & pointTran
 
     solutions = {{normalizeAngle(theta_k)}, {normalizeAngle(theta_d)}};
 
-    std::cout << "Solutions = {" << normalizeAngle(theta_k) << "}, {" << normalizeAngle(theta_d) << "}\n";
+    std::cout << "Solutions = {" << theta_k << "}, {" << theta_d << "}\n";
+    std::cout << "Solutions normalised = {" << normalizeAngle(theta_k) << "}, {" << normalizeAngle(theta_d) << "}\n";
 
     //return KDL::Equal(u_w, v_w);// && KDL::Equal(u_p.Norm(), v_p.Norm()); eso sería para pk1
 
@@ -738,7 +759,10 @@ bool PardosGotorThreePadenKahanOne::solve(const KDL::Frame & rhs, const KDL::Fra
     //theta=reference[0];//PUEDE SER UTIL
 
     solutions = {{theta}, {-theta}};
-
+    /*
+    double theta2= theta - KDL::PI;
+    solutions = {{theta}, {theta2}};
+    */
    return KDL::Equal(u_p.Norm(), v_p.Norm());//KDL::Equal(u_w, v_w) && COMENTADO
 
 }
@@ -755,6 +779,20 @@ Algebraic_UR::Algebraic_UR(int _j1, int _j2) //RECIBE ENTEROS CON LAS POSICIONES
 bool Algebraic_UR::solve(const KDL::Frame & rhs, const KDL::Frame & pointTransform, const JointConfig & reference, Solutions & solutions, const KDL::Frame & H_S_T_0, const KDL::JntArray & c_solutions) const
 {
     //TIENE QUE RECIBIR SOLUTIONS Y H_S_T_0
+
+        std::cout << "\nRotación RHS ALGEBRAIC:" << std::endl;
+    for (int i = 0; i < 3; ++i) {
+        std::cout << "  [ ";
+        for (int j = 0; j < 3; ++j) {
+            std::cout << rhs.M(i, j) << " ";
+        }
+        std::cout << "]" << std::endl;
+    }
+
+    std::cout << "Traslación RHS ALGEBRAIC: [ "
+              << rhs.p.x() << ", "
+              << rhs.p.y() << ", "
+              << rhs.p.z() << " ]\n" << std::endl;
 
     double nx = H_S_T_0.M(0, 0);
     double ny = H_S_T_0.M(1, 0);
@@ -796,10 +834,11 @@ bool Algebraic_UR::solve(const KDL::Frame & rhs, const KDL::Frame & pointTransfo
     }
     */
 
-    
+    std::cout<<"sin(c_solutions(j2)) = " << sin(c_solutions(j2)) << "\n";
+
     if(sin(c_solutions(j2)) != 0)
     {
-        constexpr double epsilon = 1e-10;
+        //constexpr double epsilon = 1e-10;
 
         double s1 = std::sin(c_solutions(j1));
         double c1 = std::cos(c_solutions(j1));
@@ -810,6 +849,14 @@ bool Algebraic_UR::solve(const KDL::Frame & rhs, const KDL::Frame & pointTransfo
 
         double C = A / s2;
         double D = B / s2;
+
+        std::cout <<"s1 = " << s1 << "\n";
+        std::cout <<"c1 = " << c1 << "\n";
+        std::cout <<"s2 = " << s2 << "\n";
+        std::cout <<"A = " << A << "\n";
+        std::cout <<"B = " << B << "\n";
+        std::cout <<"C = " << C << "\n";
+        std::cout <<"D = " << D << "\n";
 
         theta = std::atan2(C, D); 
     }
