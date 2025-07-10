@@ -156,7 +156,7 @@ std::vector<bool> ScrewTheoryIkProblem::solve(const KDL::Frame & H_S_T, const KD
             std::cout << "\nSolución 5 = " <<solutions[i](4) << "\n\n";
             std::cout << "\nSolución 1 = " <<solutions[i](0) << "\n\n";
 
-            bool reachable = subproblem->solve(rhsFrames[i], H, referenceValues, partialSolutions, H_S_T, solutions[i]) & reachability[i];
+            bool reachable = subproblem->solve(rhsFrames[i], H, referenceValues, partialSolutions, H_S_T, solutions[i], H_S_T_0) & reachability[i];
 
             if(reachable) std::cout <<"Solution of subproblem " << subproblem->describe() << " reachable\n";
             else std::cout <<"Solution of subproblem " << subproblem->describe() << " NOT reachable\n";
