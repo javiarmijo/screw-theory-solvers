@@ -452,49 +452,6 @@ ScrewTheoryIkProblem::JointIdsToSubproblem ScrewTheoryIkProblemBuilder::trySolve
     auto doubleNextToLastUnknown = nextToLastUnknown;
     std::advance(doubleNextToLastUnknown, 1);
 
-    //PRUEBA PARA PG8, QUITAR LUEGO
-    ///*
-    if(unknownsCount == 3 && nextToLastUnknown != poeTerms.rend() && simplifiedCount == 0)
-    {
-        if ((!unknownNotSimplifiedTerm(*nextToLastUnknown)) && (!unknownNotSimplifiedTerm(*doubleNextToLastUnknown)))
-        {
-            return {{}, nullptr};
-        }
-
-        int nextToLastExpId = lastExpId - 1;
-        const MatrixExponential & nextToLastExp = poe.exponentialAtJoint(nextToLastExpId);
-        int secondNextToLastExpId = nextToLastExpId - 1;
-        const MatrixExponential & secondNextToLastExp = poe.exponentialAtJoint(secondNextToLastExpId);
-
-        if (depth == 0)
-        {
-            KDL::Vector r;//QUITAR NOOOOOOOOOOOO?
-
-            if (lastExp.getMotionType() == MatrixExponential::ROTATION
-                    && nextToLastExp.getMotionType() == MatrixExponential::ROTATION
-                    && secondNextToLastExp.getMotionType() == MatrixExponential::ROTATION
-                    && !parallelAxes(secondNextToLastExp, nextToLastExp)
-                    && parallelAxes(nextToLastExp, lastExp)
-                    && !colinearAxes(nextToLastExp, lastExp))
-                {
-                    poeTerms[lastExpId].known = poeTerms[nextToLastExpId].known = poeTerms[secondNextToLastExpId].known = true;
-                    return {{secondNextToLastExpId, nextToLastExpId, lastExpId}, new PardosGotorSeven(secondNextToLastExp, nextToLastExp, lastExp, testPoints[0])};
-                }
-            else if (lastExp.getMotionType() == MatrixExponential::ROTATION
-                    && nextToLastExp.getMotionType() == MatrixExponential::ROTATION
-                    && secondNextToLastExp.getMotionType() == MatrixExponential::ROTATION
-                    && parallelAxes(secondNextToLastExp, nextToLastExp)
-                    && parallelAxes(nextToLastExp, lastExp)
-                    && !colinearAxes(nextToLastExp, lastExp)
-                    && !colinearAxes(secondNextToLastExp, nextToLastExp))
-                {
-                    poeTerms[lastExpId].known = poeTerms[nextToLastExpId].known = poeTerms[secondNextToLastExpId].known = true;
-                    return {{secondNextToLastExpId, nextToLastExpId, lastExpId}, new PardosGotorEight(secondNextToLastExp, nextToLastExp, lastExp, testPoints[0], secondNextToLastExpId, lastExpId, poe)};
-                }
-        }
-        pg5 = true;
-    }
-
     // Select the most adequate subproblem, if available.
     if (unknownsCount == 1)
     {
@@ -629,8 +586,11 @@ ScrewTheoryIkProblem::JointIdsToSubproblem ScrewTheoryIkProblemBuilder::trySolve
                     && !colinearAxes(nextToLastExp, lastExp)
                     && !colinearAxes(secondNextToLastExp, nextToLastExp))
                 {
-                    poeTerms[lastExpId].known = poeTerms[nextToLastExpId].known = poeTerms[secondNextToLastExpId].known = true;
-                    return {{secondNextToLastExpId, nextToLastExpId, lastExpId}, new PardosGotorEight(secondNextToLastExp, nextToLastExp, lastExp, testPoints[0], secondNextToLastExpId, lastExpId, poe)};
+                    if(simplifiedCount == 0)
+                    {
+                        poeTerms[lastExpId].known = poeTerms[nextToLastExpId].known = poeTerms[secondNextToLastExpId].known = true;
+                        return {{secondNextToLastExpId, nextToLastExpId, lastExpId}, new PardosGotorEight(secondNextToLastExp, nextToLastExp, lastExp, testPoints[0], secondNextToLastExpId, lastExpId, poe)};
+                    }
                 }
         }
         pg5 = true;
