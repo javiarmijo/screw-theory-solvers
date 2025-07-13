@@ -1834,18 +1834,17 @@ TEST_F(ScrewTheoryTest, PardosGotorEight)
 
     checkSolutions(actual, expected);
 
-/*
     q = fillJointValues(6, KDL::PI_2);
     ASSERT_EQ(fkSolver.JntToCart(q, H_S_T_q_DH), KDL::SolverI::E_NOERROR);
     ASSERT_TRUE(poe.evaluate(q, H_S_T_q_ST));
     ASSERT_EQ(H_S_T_q_ST, H_S_T_q_DH);
     PardosGotorEight pg8b(exp1, exp2, exp3, p, 1, 3, poe);
 
-    sol(0) = -2.8254; sol(1) =  0; sol(2) =  0; sol(3) =  0; sol(4) = -1.5708; sol(5) =  2.8254;
+    sol(0) = -2.825412711346422; sol(1) =  0; sol(2) =  0; sol(3) =  0; sol(4) = -1.570796326794897; sol(5) =  2.825412711346421;
 
     expected = {
-        {0.2798, 1.5708, 0.2798},
-        {1.5708, -1.5708, 1.5708}
+        {0.279783, 1.570796, -0.279783},
+        {1.570796, -1.570796, 1.570796}
     };
 
     ASSERT_TRUE(pg8.solve(rhs, KDL::Frame::Identity(), expected[0], actual, H_S_T_q_ST, sol, poe.getTransform()));
@@ -1856,7 +1855,6 @@ TEST_F(ScrewTheoryTest, PardosGotorEight)
     std::cout << "ángulos actuales 2: " << actual[1][0] << " - " << actual[1][1] << " - " << actual[1][2] << "\n";
 
     checkSolutions(actual, expected);
-*/
 }
 //*/
 TEST_F(ScrewTheoryTest, AbbIrb120Kinematics)
