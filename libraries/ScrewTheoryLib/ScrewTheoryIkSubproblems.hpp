@@ -410,6 +410,9 @@ public:
      * @param exp2 Second POE term.
      * @param exp3 Third POE term.  
      * @param p Characteristic point.
+     * @param firstID ID of first axis
+     * @param lastID ID of third axis
+     * @param poe POE terms
      */
     PardosGotorEight(const MatrixExponential & exp1, const MatrixExponential & exp2, const MatrixExponential & exp3, const KDL::Vector & p, const int firstID, const int lastId, const PoeExpression poe);
 

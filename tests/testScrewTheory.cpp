@@ -1788,31 +1788,44 @@ TEST_F(ScrewTheoryTest, PardosGotorSeven)
     checkSolutions(actual, expected);
 }
 
-/*
+///*
 TEST_F(ScrewTheoryTest, PardosGotorEight)
 {
     KDL::Vector p(-1, 1, 0);
     KDL::Vector k(4, 1, 1);
 
-    MatrixExponential exp1(MatrixExponential::ROTATION, {0, 1, 0}, {3, 0, 0});
-    MatrixExponential exp2(MatrixExponential::ROTATION, {0, 1, 0}, {1, 0, 0});
-    MatrixExponential exp3(MatrixExponential::ROTATION, {0, 1, 0}, {0, 0, 0}); //la coordenada x era -1
-    PardosGotorEight pg8(exp1, exp2, exp3, p);
+    PoeExpression poe = makeUR16eFromPoE();
+    KDL::Chain chain = makeUR16eFromDh();
+
+    KDL::ChainFkSolverPos_recursive fkSolver(chain);
+    KDL::Frame H_S_T_q_DH, H_S_T_q_ST;
+    KDL::JntArray q = fillJointValues(6, 0);
+    ASSERT_EQ(fkSolver.JntToCart(q, H_S_T_q_DH), KDL::SolverI::E_NOERROR);
+    ASSERT_TRUE(poe.evaluate(q, H_S_T_q_ST));
+    ASSERT_EQ(H_S_T_q_ST, H_S_T_q_DH);
+
+    MatrixExponential exp1(MatrixExponential::ROTATION, {0, 1, 0}, {0, 0, 0.181});
+    MatrixExponential exp2(MatrixExponential::ROTATION, {0, 1, 0}, {0.478, 0, 0.181});
+    MatrixExponential exp3(MatrixExponential::ROTATION, {0, 1, 0}, {0.838, 0.174, 0.181}); //la coordenada x era -1
+    PardosGotorEight pg8(exp1, exp2, exp3, p, 1, 3, poe);
 
     ASSERT_EQ(pg8.solutions(), 2);
 
+    KDL::JntArray sol(6);  // 6 es el número de articulaciones
+    sol(0) = 0; sol(1) =  0; sol(2) =  0; sol(3) =  0; sol(4) = 0; sol(5) =  0;
+
+    ScrewTheoryIkSubproblem::Solutions expected = {
+        {0, 0, 0},
+        {0, 0, 0}
+    };
+
     KDL::Frame rhs(k - p);
     ScrewTheoryIkSubproblem::Solutions actual;
-    ASSERT_TRUE(pg8.solve(rhs, KDL::Frame::Identity(), actual));
+    ASSERT_TRUE(pg8.solve(rhs, KDL::Frame::Identity(), expected[0], actual, H_S_T_q_ST, sol, poe.getTransform()));
 
     ASSERT_EQ(actual.size(), 2);
     ASSERT_EQ(actual[0].size(), 3);
     ASSERT_EQ(actual[1].size(), 3);
-
-    ScrewTheoryIkSubproblem::Solutions expected = {
-        {KDL::PI_2, KDL::PI_2, -KDL::PI_2},
-        {KDL::PI, -KDL::PI_2, -KDL::PI_2}
-    };
 
     std::cout << "ángulos esperados 1: " << expected[0][0] << " - " << expected[0][1] << " - " << expected[0][2] << "    ";
     std::cout << "ángulos esperados 2: " << expected[1][0] << " - " << expected[1][1] << " - " << expected[1][2] << "\n";
@@ -1820,8 +1833,32 @@ TEST_F(ScrewTheoryTest, PardosGotorEight)
     std::cout << "ángulos actuales 2: " << actual[1][0] << " - " << actual[1][1] << " - " << actual[1][2] << "\n";
 
     checkSolutions(actual, expected);
-}
+
+/*
+    q = fillJointValues(6, KDL::PI_2);
+    ASSERT_EQ(fkSolver.JntToCart(q, H_S_T_q_DH), KDL::SolverI::E_NOERROR);
+    ASSERT_TRUE(poe.evaluate(q, H_S_T_q_ST));
+    ASSERT_EQ(H_S_T_q_ST, H_S_T_q_DH);
+    PardosGotorEight pg8b(exp1, exp2, exp3, p, 1, 3, poe);
+
+    sol(0) = -2.8254; sol(1) =  0; sol(2) =  0; sol(3) =  0; sol(4) = -1.5708; sol(5) =  2.8254;
+
+    expected = {
+        {0.2798, 1.5708, 0.2798},
+        {1.5708, -1.5708, 1.5708}
+    };
+
+    ASSERT_TRUE(pg8.solve(rhs, KDL::Frame::Identity(), expected[0], actual, H_S_T_q_ST, sol, poe.getTransform()));
+
+    std::cout << "ángulos esperados 1: " << expected[0][0] << " - " << expected[0][1] << " - " << expected[0][2] << "    ";
+    std::cout << "ángulos esperados 2: " << expected[1][0] << " - " << expected[1][1] << " - " << expected[1][2] << "\n";
+    std::cout << "ángulos actuales 1: " << actual[0][0] << " - " << actual[0][1] << " - " << actual[0][2] << "    ";
+    std::cout << "ángulos actuales 2: " << actual[1][0] << " - " << actual[1][1] << " - " << actual[1][2] << "\n";
+
+    checkSolutions(actual, expected);
 */
+}
+//*/
 TEST_F(ScrewTheoryTest, AbbIrb120Kinematics)
 {
     KDL::Chain chain = makeAbbIrb120KinematicsFromDH();
