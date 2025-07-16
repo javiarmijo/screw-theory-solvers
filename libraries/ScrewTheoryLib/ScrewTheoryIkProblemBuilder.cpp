@@ -451,7 +451,7 @@ ScrewTheoryIkProblem::JointIdsToSubproblem ScrewTheoryIkProblemBuilder::trySolve
     std::advance(nextToLastUnknown, 1);
     auto doubleNextToLastUnknown = nextToLastUnknown;
     std::advance(doubleNextToLastUnknown, 1);
-
+/*
     if(unknownsCount == 3 && nextToLastUnknown != poeTerms.rend() && simplifiedCount == 0)
     {
         if ((!unknownNotSimplifiedTerm(*nextToLastUnknown)) && (!unknownNotSimplifiedTerm(*doubleNextToLastUnknown)))
@@ -495,7 +495,7 @@ ScrewTheoryIkProblem::JointIdsToSubproblem ScrewTheoryIkProblemBuilder::trySolve
         }
         pg5 = true;
     }
-
+//*/
     // Select the most adequate subproblem, if available.
     if (unknownsCount == 1)
     {
@@ -622,6 +622,7 @@ ScrewTheoryIkProblem::JointIdsToSubproblem ScrewTheoryIkProblemBuilder::trySolve
                     poeTerms[lastExpId].known = poeTerms[nextToLastExpId].known = poeTerms[secondNextToLastExpId].known = true;
                     return {{secondNextToLastExpId, nextToLastExpId, lastExpId}, new PardosGotorSeven(secondNextToLastExp, nextToLastExp, lastExp, testPoints[0])};
                 }
+                /*
             else if (lastExp.getMotionType() == MatrixExponential::ROTATION
                     && nextToLastExp.getMotionType() == MatrixExponential::ROTATION
                     && secondNextToLastExp.getMotionType() == MatrixExponential::ROTATION
@@ -636,10 +637,10 @@ ScrewTheoryIkProblem::JointIdsToSubproblem ScrewTheoryIkProblemBuilder::trySolve
                         return {{secondNextToLastExpId, nextToLastExpId, lastExpId}, new PardosGotorEight(secondNextToLastExp, nextToLastExp, lastExp, testPoints[0], secondNextToLastExpId, lastExpId, poe)};
                     }
                 }
+                //*/
         }
         pg5 = true;
     }
-
     ///*
     if (pg5 == true && poeTerms[lastExpId + 1].simplified == true
     && lastExp.getMotionType() == MatrixExponential::ROTATION
