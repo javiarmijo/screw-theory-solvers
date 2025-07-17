@@ -387,7 +387,6 @@ ScrewTheoryIkProblem::JointIdsToSubproblem ScrewTheoryIkProblemBuilder::trySolve
     int knownsCount = std::count_if(poeTerms.begin(), poeTerms.end(), knownTerm);
     int simplifiedCount = std::count_if(poeTerms.begin(), poeTerms.end(), unknownSimplifiedTerm);
     int unknownsCount = std::count_if(poeTerms.begin(), poeTerms.end(), unknownNotSimplifiedTerm);
-    bool pg5 = false;
 
     if (unknownsCount == 0 || unknownsCount > 3) // TODO: hardcoded
     {
@@ -443,49 +442,7 @@ ScrewTheoryIkProblem::JointIdsToSubproblem ScrewTheoryIkProblemBuilder::trySolve
     std::advance(nextToLastUnknown, 1);
     auto doubleNextToLastUnknown = nextToLastUnknown;
     std::advance(doubleNextToLastUnknown, 1);
-///*
-    if(unknownsCount == 3 && nextToLastUnknown != poeTerms.rend() && simplifiedCount == 0)
-    {
-        if ((!unknownNotSimplifiedTerm(*nextToLastUnknown)) && (!unknownNotSimplifiedTerm(*doubleNextToLastUnknown)))
-        {
-            return {{}, nullptr};
-        }
 
-        int nextToLastExpId = lastExpId - 1;
-        const MatrixExponential & nextToLastExp = poe.exponentialAtJoint(nextToLastExpId);
-        int secondNextToLastExpId = nextToLastExpId - 1;
-        const MatrixExponential & secondNextToLastExp = poe.exponentialAtJoint(secondNextToLastExpId);
-
-        if (depth == 0)
-        {
-            if (lastExp.getMotionType() == MatrixExponential::ROTATION
-                    && nextToLastExp.getMotionType() == MatrixExponential::ROTATION
-                    && secondNextToLastExp.getMotionType() == MatrixExponential::ROTATION
-                    && !parallelAxes(secondNextToLastExp, nextToLastExp)
-                    && parallelAxes(nextToLastExp, lastExp)
-                    && !colinearAxes(nextToLastExp, lastExp))
-                {
-                    poeTerms[lastExpId].known = poeTerms[nextToLastExpId].known = poeTerms[secondNextToLastExpId].known = true;
-                    return {{secondNextToLastExpId, nextToLastExpId, lastExpId}, new PardosGotorSeven(secondNextToLastExp, nextToLastExp, lastExp, testPoints[0])};
-                }
-            else if (lastExp.getMotionType() == MatrixExponential::ROTATION
-                    && nextToLastExp.getMotionType() == MatrixExponential::ROTATION
-                    && secondNextToLastExp.getMotionType() == MatrixExponential::ROTATION
-                    && parallelAxes(secondNextToLastExp, nextToLastExp)
-                    && parallelAxes(nextToLastExp, lastExp)
-                    && !colinearAxes(nextToLastExp, lastExp)
-                    && !colinearAxes(secondNextToLastExp, nextToLastExp))
-                {
-                    if(simplifiedCount == 0)
-                    {
-                        poeTerms[lastExpId].known = poeTerms[nextToLastExpId].known = poeTerms[secondNextToLastExpId].known = true;
-                        return {{secondNextToLastExpId, nextToLastExpId, lastExpId}, new PardosGotorEight(secondNextToLastExp, nextToLastExp, lastExp, testPoints[0], secondNextToLastExpId, lastExpId, poe)};
-                    }
-                }
-        }
-        pg5 = true;
-    }
-//*/
     // Select the most adequate subproblem, if available.
     if (unknownsCount == 1)
     {
@@ -499,13 +456,12 @@ ScrewTheoryIkProblem::JointIdsToSubproblem ScrewTheoryIkProblemBuilder::trySolve
                     poeTerms[lastExpId].known = true;
                     return {{lastExpId}, new PadenKahanOne(lastExp, testPoints[0])};
                 }
-                /*else
+                else
                 {
                     poeTerms[lastExpId].known = true;
                     const MatrixExponential & nextToLastExp = poe.exponentialAtJoint(lastExpId + 1);
                     return {{lastExpId}, new PardosGotorFive(lastExp, nextToLastExp, testPoints[0])};
                 }
-                */
             }
 
             if (lastExp.getMotionType() == MatrixExponential::TRANSLATION)
@@ -537,7 +493,6 @@ ScrewTheoryIkProblem::JointIdsToSubproblem ScrewTheoryIkProblemBuilder::trySolve
                 return {{lastExpId}, new PardosGotorThree(lastExp, testPoints[0], testPoints[1])};
             }
         }
-        pg5 = true;
     }
     else if (unknownsCount == 2 && lastUnknown != poeTerms.rend())
     {
@@ -584,7 +539,6 @@ ScrewTheoryIkProblem::JointIdsToSubproblem ScrewTheoryIkProblemBuilder::trySolve
                 return {{nextToLastExpId, lastExpId}, new PardosGotorTwo(nextToLastExp, lastExp, testPoints[0])};
             }
         }
-        pg5 = true;
     }
     else if(unknownsCount == 3 && nextToLastUnknown != poeTerms.rend() && simplifiedCount == 0)
     {
@@ -610,7 +564,6 @@ ScrewTheoryIkProblem::JointIdsToSubproblem ScrewTheoryIkProblemBuilder::trySolve
                     poeTerms[lastExpId].known = poeTerms[nextToLastExpId].known = poeTerms[secondNextToLastExpId].known = true;
                     return {{secondNextToLastExpId, nextToLastExpId, lastExpId}, new PardosGotorSeven(secondNextToLastExp, nextToLastExp, lastExp, testPoints[0])};
                 }
-                ///*
             else if (lastExp.getMotionType() == MatrixExponential::ROTATION
                     && nextToLastExp.getMotionType() == MatrixExponential::ROTATION
                     && secondNextToLastExp.getMotionType() == MatrixExponential::ROTATION
@@ -625,21 +578,8 @@ ScrewTheoryIkProblem::JointIdsToSubproblem ScrewTheoryIkProblemBuilder::trySolve
                         return {{secondNextToLastExpId, nextToLastExpId, lastExpId}, new PardosGotorEight(secondNextToLastExp, nextToLastExp, lastExp, testPoints[0], secondNextToLastExpId, lastExpId, poe)};
                     }
                 }
-                //*/
         }
-        pg5 = true;
     }
-    ///*
-    if (pg5 == true && poeTerms[lastExpId + 1].simplified == true
-    && lastExp.getMotionType() == MatrixExponential::ROTATION
-    && !liesOnAxis(lastExp, testPoints[0])
-    && unknownsCount == 1 && depth == 0)
-    {
-        const MatrixExponential & nextToLastExp = poe.exponentialAtJoint(lastExpId + 1);
-        poeTerms[lastExpId].known = true;
-        return {{lastExpId}, new PardosGotorFive(lastExp, nextToLastExp, testPoints[0])};
-    }
-    //*/
 
     return {{}, nullptr};
 }
