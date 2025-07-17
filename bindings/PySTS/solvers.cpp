@@ -11,6 +11,7 @@ using namespace roboticslab;
 
 void init_solvers(pybind11::module &m)
 {
+    py::module::import("PyKDL");
     py::class_<MatrixExponential> exp(m, "MatrixExponential");
     py::enum_<MatrixExponential::motion> motion_type(exp, "motion");
     motion_type.value("ROTATION", MatrixExponential::motion::ROTATION);

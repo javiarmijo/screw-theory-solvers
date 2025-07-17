@@ -4,6 +4,7 @@
 
 #include <numeric> // std::accumulate
 #include <vector>
+#include <iostream>
 
 #include "ScrewTheoryTools.hpp"
 
@@ -88,6 +89,36 @@ std::vector<bool> ScrewTheoryIkProblem::solve(const KDL::Frame & H_S_T, const KD
 
 /**/const KDL::Frame & H_S_T_0 = poe.getTransform(); //H_S_T_0?
 
+    // std::cout << "\n Rotación H_S_T_0:" << std::endl; //H_S_T_0 ES HST0
+    // for (int i = 0; i < 3; ++i) {
+    //     std::cout << "  [ ";
+    //     for (int j = 0; j < 3; ++j) {
+    //         std::cout << poe.getTransform().M(i, j) << " ";
+    //     }
+    //     std::cout << "]" << std::endl;
+    // }
+
+    // std::cout << "Traslación H_S_T_0: [ "
+    //           << poe.getTransform().p.x() << ", "
+    //           << poe.getTransform().p.y() << ", "
+    //           << poe.getTransform().p.z() << " ]\n" << std::endl;
+
+
+    
+    // std::cout << "\n Rotación H_S_T:" << std::endl; //H_S_T ES NOAP
+    // for (int i = 0; i < 3; ++i) {
+    //     std::cout << "  [ ";
+    //     for (int j = 0; j < 3; ++j) {
+    //         std::cout << H_S_T.M(i, j) << " ";
+    //     }
+    //     std::cout << "]" << std::endl;
+    // }
+
+    // std::cout << "Traslación H_S_T: [ "
+    //           << H_S_T.p.x() << ", "
+    //           << H_S_T.p.y() << ", "
+    //           << H_S_T.p.z() << " ]\n" << std::endl;
+
     // Insert a dummy value to avoid accessing an empty vector.
     solutions.emplace_back(poe.size());
     rhsFrames.emplace_back((reversed ? H_S_T.Inverse() : H_S_T) * poe.getTransform().Inverse());
@@ -121,7 +152,14 @@ std::vector<bool> ScrewTheoryIkProblem::solve(const KDL::Frame & H_S_T, const KD
             // Actually solve each subproblem, use current right-hand side of PoE to obtain
             // the right-hand side of said subproblem. Local reachability is common to all
             // partial solutions, and will be and-ed with the global reachability status.
-            bool reachable = subproblem->solve(rhsFrames[i], H, referenceValues, partialSolutions, H_S_T_0, solutions[i]) & reachability[i];
+            // std::cout << "\nSolución 6 = " <<solutions[i](5) << "\n\n";
+            // std::cout << "\nSolución 5 = " <<solutions[i](4) << "\n\n";
+            // std::cout << "\nSolución 1 = " <<solutions[i](0) << "\n\n";
+
+            bool reachable = subproblem->solve(rhsFrames[i], H, referenceValues, partialSolutions, H_S_T, solutions[i], H_S_T_0) & reachability[i];
+
+            // if(reachable) std::cout <<"Solution of subproblem " << subproblem->describe() << " reachable\n";
+            // else std::cout <<"Solution of subproblem " << subproblem->describe() << " NOT reachable\n";
 
             // The global number of solutions is increased by this step.
             if (partialSolutions.size() > 1)

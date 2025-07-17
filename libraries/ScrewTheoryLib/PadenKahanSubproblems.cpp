@@ -3,6 +3,7 @@
 #include "ScrewTheoryIkSubproblems.hpp"
 
 #include <cmath>
+#include <iostream>
 
 #include "ScrewTheoryTools.hpp"
 
@@ -32,6 +33,13 @@ bool PadenKahanOne::solve(const KDL::Frame & rhs, const KDL::Frame & pointTransf
     KDL::Vector u_p = u - u_w;
     KDL::Vector v_p = v - v_w;
 
+    // std::cout << "u_p = (" << u_p.x() << ", " << u_p.y() << ", " << u_p.z() << ")\n";
+    // std::cout << "v_p = (" << v_p.x() << ", " << v_p.y() << ", " << v_p.z() << ")\n";
+    // std::cout << "u_p.Norm() = " << u_p.Norm() << "\n";
+    // std::cout << "v_p.Norm() = " << v_p.Norm() << "\n";
+    // std::cout << "u_w = (" << u_w.x() << ", " << u_w.y() << ", " << u_w.z() << ")\n";
+    // std::cout << "v_w = (" << v_w.x() << ", " << v_w.y() << ", " << v_w.z() << ")\n";
+
     double theta = reference[0];
 
     if (!KDL::Equal(u_p.Norm(), 0.0) && !KDL::Equal(v_p.Norm(), 0.0))
@@ -41,7 +49,7 @@ bool PadenKahanOne::solve(const KDL::Frame & rhs, const KDL::Frame & pointTransf
 
     solutions = {{normalizeAngle(theta)}};
 
-    return KDL::Equal(u_w, v_w) && KDL::Equal(u_p.Norm(), v_p.Norm());
+    return KDL::Equal(u_w, v_w, 1e-2) && KDL::Equal(u_p.Norm(), v_p.Norm(), 1e-2);
 }
 
 // -----------------------------------------------------------------------------

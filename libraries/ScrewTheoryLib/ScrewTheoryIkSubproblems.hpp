@@ -389,6 +389,55 @@ private:
 };
 
 /**
+ * @ingroup ScrewTheoryLibd
+ *
+ * @brief Eighth Pardos-Gotor subproblem
+ *
+ * Dual solution, double revolute joint geometric IK subproblem given by
+ * @f$ e\,^{\hat{\xi_1}\,{\theta_1}} \cdot e\,^{\hat{\xi_2}\,{\theta_2}} \cdot p = k @f$
+ * (consecutive parallel rotation screws applied to a point,
+ * see @cite pardosgotor2018str @cite pardosgotor2022str).
+ */
+class PardosGotorEight : public ScrewTheoryIkSubproblem
+{
+public:
+    using ScrewTheoryIkSubproblem::solve;
+
+    /**
+     * @brief Constructor
+     *
+     * @param exp1 First POE term.
+     * @param exp2 Second POE term.
+     * @param exp3 Third POE term.  
+     * @param p Characteristic point.
+     * @param firstID ID of first axis
+     * @param lastID ID of third axis
+     * @param poe POE terms
+     */
+    PardosGotorEight(const MatrixExponential & exp1, const MatrixExponential & exp2, const MatrixExponential & exp3, const KDL::Vector & p, const int firstID, const int lastId, const PoeExpression poe);
+
+
+    bool solve(const KDL::Frame & rhs, const KDL::Frame & pointTransform, const JointConfig & reference, Solutions & solutions, const KDL::Frame & H_S_T, const KDL::JntArray & c_solutions, const KDL::Frame & H_S_T_0) const override;
+
+    bool solve(const KDL::Frame & rhs, const KDL::Frame & pointTransform, const JointConfig & reference, Solutions & solutions) const override
+    {
+        return false;
+    }
+    int solutions() const override
+    { return 2; }//two sets of triple solutions
+
+    const char * describe() const override
+    { return "PG8"; }
+
+private:
+    const MatrixExponential exp1, exp2, exp3;
+    const KDL::Vector p, n;
+    const KDL::Rotation axisPow;
+    const int firstID, lastID;
+    const PoeExpression poe;
+};
+
+/**
  * @ingroup ScrewTheoryLib
  *
  * @brief Third Pardos-Gotor subproblem 2
@@ -450,7 +499,7 @@ public:
      */
     Algebraic_UR(int j1, int j2);
 
-    bool solve(const KDL::Frame & rhs, const KDL::Frame & pointTransform, const JointConfig & reference, Solutions & solutions, const KDL::Frame & H_S_T_0, const KDL::JntArray & c_solutions) const override;
+    bool solve(const KDL::Frame & rhs, const KDL::Frame & pointTransform, const JointConfig & reference, Solutions & solutions, const KDL::Frame & H_S_T_0, const KDL::JntArray & c_solutions, const KDL::Frame & quitar) const override;
 
     bool solve(const KDL::Frame & rhs, const KDL::Frame & pointTransform, const JointConfig & reference, Solutions & solutions) const override
     {

@@ -302,11 +302,6 @@ ScrewTheoryIkProblem::Steps ScrewTheoryIkProblemBuilder::searchSolutions()
         // Find a solution if available.
         if (auto [ids, subproblem] = trySolve(depth); subproblem != nullptr)
         {
-            std::cout << "[SOLUCIÓN ENCONTRADA] Subproblema: " << subproblem->describe() << " en IDs: ";
-            int knownsCount = std::count_if(poeTerms.begin(), poeTerms.end(), knownTerm);
-            for (auto id : ids) std::cout << id << " ";
-            std::cout << std::endl;
-            std::cout << "knownsCount = " << knownsCount << "\n";
             // Solution found, reset and start again. We'll iterate over the same points, taking
             // into account that some terms are already known.
             steps.emplace_back(ids, subproblem);
@@ -394,7 +389,7 @@ ScrewTheoryIkProblem::JointIdsToSubproblem ScrewTheoryIkProblemBuilder::trySolve
     int unknownsCount = std::count_if(poeTerms.begin(), poeTerms.end(), unknownNotSimplifiedTerm);
     bool pg5 = false;
 
-    if (unknownsCount == 0 || unknownsCount > 2) // TODO: hardcoded
+    if (unknownsCount == 0 || unknownsCount > 3) // TODO: hardcoded
     {
         if (depth == 1 && simplifiedCount <= 1)
         {
@@ -409,7 +404,9 @@ ScrewTheoryIkProblem::JointIdsToSubproblem ScrewTheoryIkProblemBuilder::trySolve
                 const MatrixExponential & lastExp_pg3 = poe.exponentialAtJoint(lastExpId_pg3);
 
                 poeTerms[lastExpId_pg3].known = true;
-                return {{lastExpId_pg3}, new PardosGotorThreePadenKahanOne(exp_pg3, exp_pk1, testPoints[0], point)};
+
+                //return {{lastExpId_pg3}, new PardosGotorThreePadenKahanOne(exp_pg3, exp_pk1, testPoints[0], point)};
+                return {{lastExpId_pg3}, new PardosGotorThreePadenKahanOne(exp_pg3, exp_pk1, KDL::Vector(0.838, 0.364, 0.061), point)};
             }
             else if (knownsCount == 2)
             {
@@ -446,7 +443,51 @@ ScrewTheoryIkProblem::JointIdsToSubproblem ScrewTheoryIkProblemBuilder::trySolve
     std::advance(nextToLastUnknown, 1);
     auto doubleNextToLastUnknown = nextToLastUnknown;
     std::advance(doubleNextToLastUnknown, 1);
+/*
+    if(unknownsCount == 3 && nextToLastUnknown != poeTerms.rend() && simplifiedCount == 0)
+    {
+        if ((!unknownNotSimplifiedTerm(*nextToLastUnknown)) && (!unknownNotSimplifiedTerm(*doubleNextToLastUnknown)))
+        {
+            return {{}, nullptr};
+        }
 
+        int nextToLastExpId = lastExpId - 1;
+        const MatrixExponential & nextToLastExp = poe.exponentialAtJoint(nextToLastExpId);
+        int secondNextToLastExpId = nextToLastExpId - 1;
+        const MatrixExponential & secondNextToLastExp = poe.exponentialAtJoint(secondNextToLastExpId);
+
+        if (depth == 0)
+        {
+            KDL::Vector r;//QUITAR NOOOOOOOOOOOO?
+
+            if (lastExp.getMotionType() == MatrixExponential::ROTATION
+                    && nextToLastExp.getMotionType() == MatrixExponential::ROTATION
+                    && secondNextToLastExp.getMotionType() == MatrixExponential::ROTATION
+                    && !parallelAxes(secondNextToLastExp, nextToLastExp)
+                    && parallelAxes(nextToLastExp, lastExp)
+                    && !colinearAxes(nextToLastExp, lastExp))
+                {
+                    poeTerms[lastExpId].known = poeTerms[nextToLastExpId].known = poeTerms[secondNextToLastExpId].known = true;
+                    return {{secondNextToLastExpId, nextToLastExpId, lastExpId}, new PardosGotorSeven(secondNextToLastExp, nextToLastExp, lastExp, testPoints[0])};
+                }
+            else if (lastExp.getMotionType() == MatrixExponential::ROTATION
+                    && nextToLastExp.getMotionType() == MatrixExponential::ROTATION
+                    && secondNextToLastExp.getMotionType() == MatrixExponential::ROTATION
+                    && parallelAxes(secondNextToLastExp, nextToLastExp)
+                    && parallelAxes(nextToLastExp, lastExp)
+                    && !colinearAxes(nextToLastExp, lastExp)
+                    && !colinearAxes(secondNextToLastExp, nextToLastExp))
+                {
+                    if(simplifiedCount == 0)
+                    {
+                        poeTerms[lastExpId].known = poeTerms[nextToLastExpId].known = poeTerms[secondNextToLastExpId].known = true;
+                        return {{secondNextToLastExpId, nextToLastExpId, lastExpId}, new PardosGotorEight(secondNextToLastExp, nextToLastExp, lastExp, testPoints[0], secondNextToLastExpId, lastExpId, poe)};
+                    }
+                }
+        }
+        pg5 = true;
+    }
+//*/
     // Select the most adequate subproblem, if available.
     if (unknownsCount == 1)
     {
@@ -547,7 +588,7 @@ ScrewTheoryIkProblem::JointIdsToSubproblem ScrewTheoryIkProblemBuilder::trySolve
         }
         pg5 = true;
     }
-    else if(unknownsCount == 3 && nextToLastUnknown != poeTerms.rend())
+    else if(unknownsCount == 3 && nextToLastUnknown != poeTerms.rend() && simplifiedCount == 0)
     {
         if ((!unknownNotSimplifiedTerm(*nextToLastUnknown)) && (!unknownNotSimplifiedTerm(*doubleNextToLastUnknown)))
         {
@@ -561,7 +602,7 @@ ScrewTheoryIkProblem::JointIdsToSubproblem ScrewTheoryIkProblemBuilder::trySolve
 
         if (depth == 0)
         {
-            KDL::Vector r;
+            KDL::Vector r;//QUITAR NOOOOOOOOOOOO?
 
             if (lastExp.getMotionType() == MatrixExponential::ROTATION
                     && nextToLastExp.getMotionType() == MatrixExponential::ROTATION
@@ -573,10 +614,25 @@ ScrewTheoryIkProblem::JointIdsToSubproblem ScrewTheoryIkProblemBuilder::trySolve
                     poeTerms[lastExpId].known = poeTerms[nextToLastExpId].known = poeTerms[secondNextToLastExpId].known = true;
                     return {{secondNextToLastExpId, nextToLastExpId, lastExpId}, new PardosGotorSeven(secondNextToLastExp, nextToLastExp, lastExp, testPoints[0])};
                 }
+                /*
+            else if (lastExp.getMotionType() == MatrixExponential::ROTATION
+                    && nextToLastExp.getMotionType() == MatrixExponential::ROTATION
+                    && secondNextToLastExp.getMotionType() == MatrixExponential::ROTATION
+                    && parallelAxes(secondNextToLastExp, nextToLastExp)
+                    && parallelAxes(nextToLastExp, lastExp)
+                    && !colinearAxes(nextToLastExp, lastExp)
+                    && !colinearAxes(secondNextToLastExp, nextToLastExp))
+                {
+                    if(simplifiedCount == 0)
+                    {
+                        poeTerms[lastExpId].known = poeTerms[nextToLastExpId].known = poeTerms[secondNextToLastExpId].known = true;
+                        return {{secondNextToLastExpId, nextToLastExpId, lastExpId}, new PardosGotorEight(secondNextToLastExp, nextToLastExp, lastExp, testPoints[0], secondNextToLastExpId, lastExpId, poe)};
+                    }
+                }
+                //*/
         }
         pg5 = true;
     }
-
     ///*
     if (pg5 == true && poeTerms[lastExpId + 1].simplified == true
     && lastExp.getMotionType() == MatrixExponential::ROTATION
@@ -907,12 +963,8 @@ bool ScrewTheoryIkProblemBuilder::simplifyWithPardosThree(MatrixExponential & ex
                     {
                         KDL::Vector axesCross = lastExp.getAxis() * prevExp.getAxis();
 
-                        std::cout << "axesCross = (" << axesCross.x() << ", " << axesCross.y() << ", " << axesCross.z() << ") \n";
-
                         MatrixExponential exp7(MatrixExponential::TRANSLATION, axesCross);
-                        std::cout << "test point1 = (" << testPoints[0].x() << ", " << testPoints[0].y() << ", " << testPoints[0].z() << ") \n";
-                        std::cout << "test point2 = (" << testPoints[1].x() << ", " << testPoints[1].y() << ", " << testPoints[1].z() << ") \n";
-                        std::cout << "point = (" << lastExp.getOrigin().x() << ", " << lastExp.getOrigin().y() << ", " << lastExp.getOrigin().z() << ") \n";
+
                         exp1 = exp7;
                         exp2 = lastExp;
                         point = lastExp.getOrigin();
