@@ -668,8 +668,6 @@ bool PardosGotorEight::solve(const KDL::Frame & rhs, const KDL::Frame & pointTra
         pg4_ret = samePlane && c_zero;
     }
 
-    if(!pg4_ret) return false;
-
     //pk1
 
     KDL::Vector pk = o3k + (f - o3p);
