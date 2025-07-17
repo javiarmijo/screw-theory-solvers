@@ -443,7 +443,7 @@ ScrewTheoryIkProblem::JointIdsToSubproblem ScrewTheoryIkProblemBuilder::trySolve
     std::advance(nextToLastUnknown, 1);
     auto doubleNextToLastUnknown = nextToLastUnknown;
     std::advance(doubleNextToLastUnknown, 1);
-/*
+///*
     if(unknownsCount == 3 && nextToLastUnknown != poeTerms.rend() && simplifiedCount == 0)
     {
         if ((!unknownNotSimplifiedTerm(*nextToLastUnknown)) && (!unknownNotSimplifiedTerm(*doubleNextToLastUnknown)))
@@ -614,7 +614,7 @@ ScrewTheoryIkProblem::JointIdsToSubproblem ScrewTheoryIkProblemBuilder::trySolve
                     poeTerms[lastExpId].known = poeTerms[nextToLastExpId].known = poeTerms[secondNextToLastExpId].known = true;
                     return {{secondNextToLastExpId, nextToLastExpId, lastExpId}, new PardosGotorSeven(secondNextToLastExp, nextToLastExp, lastExp, testPoints[0])};
                 }
-                /*
+                ///*
             else if (lastExp.getMotionType() == MatrixExponential::ROTATION
                     && nextToLastExp.getMotionType() == MatrixExponential::ROTATION
                     && secondNextToLastExp.getMotionType() == MatrixExponential::ROTATION
@@ -668,7 +668,7 @@ void ScrewTheoryIkProblemBuilder::simplify(int depth)
                 break;
             }
         }
-        simplifyWithPardosFive();//si no se ha simplificado de ninguna forma, se prueba con PG5, no hace falta ir exponencial por exponencial ya que la función actúa para el poe completo
+        simplifyWithPardosFive();
     }
 }
 
@@ -937,11 +937,8 @@ bool ScrewTheoryIkProblemBuilder::simplifyWithPardosThree(MatrixExponential & ex
                 {
                     if(poeTerms[i].known || poeTerms[i].simplified || poeTerms[i+1].known || poeTerms[i+1].simplified)
                     {
-                        //std::cout <<"NO NOOOO???  hola??????\n";
                         return false;
-                        //break;
                     }
-                    //std::cout<<"NUEVO : paralelos los ejes " << i << " y " << i + 1 << " (al revés)\n";
                     simplified = true;
                     continue;
                 }
@@ -953,7 +950,6 @@ bool ScrewTheoryIkProblemBuilder::simplifyWithPardosThree(MatrixExponential & ex
                 {
                     if(poeTerms[i].known || poeTerms[i].simplified)
                     {
-                        //std::cout <<"hola??????\n";
                         return false;
                     }
 
