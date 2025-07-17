@@ -833,18 +833,14 @@ void ScrewTheoryIkProblemBuilder::simplifyWithPardosFive()
                     && parallelAxes(currentExp, nextExp)
                     && !colinearAxes(currentExp, nextExp))
                 {
-                    if(poeTerms[i].known || poeTerms[i].simplified || poeTerms[i+1].known || poeTerms[i+1].simplified) break;//CREO QUE NO HACE FALTA
                     // Might be ultimately simplified, let's find out in the next iterations.
                     simplified = true;
                     continue;
                 }
             }
-            else if (nextExp.getMotionType() == MatrixExponential::ROTATION
-                    && firstExp.getMotionType() == MatrixExponential::ROTATION //estas dos comprobaciones de rotación creo que no harían falta
-                    && !parallelAxes(firstExp, nextExp)
+            else if (!parallelAxes(firstExp, nextExp)
                     && simplified == true)
             {
-                if(poeTerms[i].known || poeTerms[i].simplified || poeTerms[i+1].known || poeTerms[i+1].simplified) break;
                 // Can simplify everything to the *right* of this PoE term.
                 for (int j = idStart + 1; j <= idEnd; j++)
                 {
@@ -872,14 +868,11 @@ void ScrewTheoryIkProblemBuilder::simplifyWithPardosFive()
                     && parallelAxes(currentExp, prevExp)
                     && !colinearAxes(currentExp, prevExp))
                 {
-                    if(poeTerms[i].known || poeTerms[i].simplified || poeTerms[i+1].known || poeTerms[i+1].simplified) break;
                     simplified = true;
                     continue;
                 }
             }
-            else if (prevExp.getMotionType() == MatrixExponential::ROTATION
-                    && lastExp.getMotionType() == MatrixExponential::ROTATION //estas dos comprobaciones de rotación creo que no harían falta
-                    && !parallelAxes(lastExp, prevExp)
+            else if (!parallelAxes(lastExp, prevExp)
                     && simplified == true)
             {
                 // Can simplify everything to the *left* of this PoE term.
