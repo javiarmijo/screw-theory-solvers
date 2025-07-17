@@ -302,11 +302,6 @@ ScrewTheoryIkProblem::Steps ScrewTheoryIkProblemBuilder::searchSolutions()
         // Find a solution if available.
         if (auto [ids, subproblem] = trySolve(depth); subproblem != nullptr)
         {
-            std::cout << "[SOLUCIÓN ENCONTRADA] Subproblema: " << subproblem->describe() << " en IDs: ";
-            int knownsCount = std::count_if(poeTerms.begin(), poeTerms.end(), knownTerm);
-            for (auto id : ids) std::cout << id << " ";
-            std::cout << std::endl;
-            std::cout << "knownsCount = " << knownsCount << "\n";
             // Solution found, reset and start again. We'll iterate over the same points, taking
             // into account that some terms are already known.
             steps.emplace_back(ids, subproblem);
@@ -409,9 +404,6 @@ ScrewTheoryIkProblem::JointIdsToSubproblem ScrewTheoryIkProblemBuilder::trySolve
                 const MatrixExponential & lastExp_pg3 = poe.exponentialAtJoint(lastExpId_pg3);
 
                 poeTerms[lastExpId_pg3].known = true;
-
-                std::cout << "exp_pg3.getAxis() = (" << exp_pg3.getAxis().x() << ", " << exp_pg3.getAxis().y() << ", " << exp_pg3.getAxis().z() << ") \n";
-                std::cout << "exp_pk1.getAxis() = (" << exp_pk1.getAxis().x() << ", " << exp_pk1.getAxis().y() << ", " << exp_pk1.getAxis().z() << ") \n";
 
                 //return {{lastExpId_pg3}, new PardosGotorThreePadenKahanOne(exp_pg3, exp_pk1, testPoints[0], point)};
                 return {{lastExpId_pg3}, new PardosGotorThreePadenKahanOne(exp_pg3, exp_pk1, KDL::Vector(0.838, 0.364, 0.061), point)};
@@ -971,20 +963,11 @@ bool ScrewTheoryIkProblemBuilder::simplifyWithPardosThree(MatrixExponential & ex
                     {
                         KDL::Vector axesCross = lastExp.getAxis() * prevExp.getAxis();
 
-                        std::cout << "axesCross = (" << axesCross.x() << ", " << axesCross.y() << ", " << axesCross.z() << ") \n";
-
                         MatrixExponential exp7(MatrixExponential::TRANSLATION, axesCross);
-                        std::cout << "test point1 = (" << testPoints[0].x() << ", " << testPoints[0].y() << ", " << testPoints[0].z() << ") \n";
-                        std::cout << "test point2 = (" << testPoints[1].x() << ", " << testPoints[1].y() << ", " << testPoints[1].z() << ") \n";
-                        std::cout << "point = (" << lastExp.getOrigin().x() << ", " << lastExp.getOrigin().y() << ", " << lastExp.getOrigin().z() << ") \n";
+
                         exp1 = exp7;
                         exp2 = lastExp;
                         point = lastExp.getOrigin();
-
-                        std::cout << "exp1.getAxis() = (" << exp1.getAxis().x() << ", " << exp1.getAxis().y() << ", " << exp1.getAxis().z() << ") \n";
-                        std::cout << "exp7.getAxis() = (" << exp7.getAxis().x() << ", " << exp7.getAxis().y() << ", " << exp7.getAxis().z() << ") \n";
-                        std::cout << "lastExp.getAxis() = (" << lastExp.getAxis().x() << ", " << lastExp.getAxis().y() << ", " << lastExp.getAxis().z() << ") \n";
-                        std::cout << "exp2.getAxis() = (" << exp2.getAxis().x() << ", " << exp2.getAxis().y() << ", " << exp2.getAxis().z() << ") \n";
 
                         return true;
                     }
