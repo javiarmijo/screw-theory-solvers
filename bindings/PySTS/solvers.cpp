@@ -60,8 +60,8 @@ void init_solvers(pybind11::module &m)
     ik_problem.def("solve", [](ScrewTheoryIkProblem& self, const KDL::Frame & H_S_T)
     {
         ScrewTheoryIkProblem::Solutions solutions;
-        self.solve(H_S_T, solutions);
-        return solutions;
+        auto reachability = self.solve(H_S_T, solutions);
+        return std::make_tuple(solutions, reachability);
     });
     ik_problem.def("solutions", &ScrewTheoryIkProblem::solutions);
     ik_problem.def("getSteps", &ScrewTheoryIkProblem::getSteps);
@@ -177,6 +177,12 @@ void init_solvers(pybind11::module &m)
     config_selector_load.def(py::init<const KDL::JntArray &, const KDL::JntArray &>(), py::arg("qMin"), py::arg("qMax"));
     config_selector_load.def("configure", &ConfigurationSelectorLeastOverallAngularDisplacement::configure, py::arg("solutions"), py::arg("reachability"));
     config_selector_load.def("findOptimalConfiguration", &ConfigurationSelectorLeastOverallAngularDisplacement::findOptimalConfiguration, py::arg("qGuess"));
-    config_selector_load.def("retrievePose", &ConfigurationSelectorLeastOverallAngularDisplacement::retrievePose, py::arg("q"));
+    // config_selector_load.def("retrievePose", &ConfigurationSelectorLeastOverallAngularDisplacement::retrievePose, py::arg("q"));
+    config_selector_load.def("retrievePose", [](ConfigurationSelectorLeastOverallAngularDisplacement& self)
+    {
+        KDL::JntArray q;
+        self.retrievePose(q);
+        return q;
+    });
     config_selector_load.def("getValidSolutionIndex", &ConfigurationSelectorLeastOverallAngularDisplacement::getValidSolutionIndex);
 }
