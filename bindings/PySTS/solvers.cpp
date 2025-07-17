@@ -55,10 +55,14 @@ void init_solvers(pybind11::module &m)
     ik_subproblem.def("describe", &ScrewTheoryIkSubproblem::describe);
 
     py::class_<ScrewTheoryIkProblem, std::shared_ptr<ScrewTheoryIkProblem>> ik_problem(m, "ScrewTheoryIkProblem");
-    ik_problem.def("solve", static_cast<std::vector<bool> (ScrewTheoryIkProblem::*)(const KDL::Frame &, const KDL::JntArray &, ScrewTheoryIkProblem::Solutions &)>(&ScrewTheoryIkProblem::solve),
-                   py::arg("H_S_T"), py::arg("reference"), py::arg("solutions"));
-    ik_problem.def("solve", static_cast<std::vector<bool> (ScrewTheoryIkProblem::*)(const KDL::Frame &, ScrewTheoryIkProblem::Solutions &)>(&ScrewTheoryIkProblem::solve),
-                   py::arg("H_S_T"), py::arg("solutions"));
+    // ik_problem.def("solve", static_cast<std::vector<bool> (ScrewTheoryIkProblem::*)(const KDL::Frame &, const KDL::JntArray &, ScrewTheoryIkProblem::Solutions &)>(&ScrewTheoryIkProblem::solve),
+    //                py::arg("H_S_T"), py::arg("reference"), py::arg("solutions"));
+    ik_problem.def("solve", [](ScrewTheoryIkProblem& self, const KDL::Frame & H_S_T)
+    {
+        ScrewTheoryIkProblem::Solutions solutions;
+        self.solve(H_S_T, solutions);
+        return solutions;
+    });
     ik_problem.def("solutions", &ScrewTheoryIkProblem::solutions);
     ik_problem.def("getSteps", &ScrewTheoryIkProblem::getSteps);
     ik_problem.def("isReversed", &ScrewTheoryIkProblem::isReversed);
