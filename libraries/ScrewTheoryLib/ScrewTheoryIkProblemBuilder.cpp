@@ -458,8 +458,6 @@ ScrewTheoryIkProblem::JointIdsToSubproblem ScrewTheoryIkProblemBuilder::trySolve
 
         if (depth == 0)
         {
-            KDL::Vector r;//QUITAR NOOOOOOOOOOOO?
-
             if (lastExp.getMotionType() == MatrixExponential::ROTATION
                     && nextToLastExp.getMotionType() == MatrixExponential::ROTATION
                     && secondNextToLastExp.getMotionType() == MatrixExponential::ROTATION
@@ -602,8 +600,6 @@ ScrewTheoryIkProblem::JointIdsToSubproblem ScrewTheoryIkProblemBuilder::trySolve
 
         if (depth == 0)
         {
-            KDL::Vector r;//QUITAR NOOOOOOOOOOOO?
-
             if (lastExp.getMotionType() == MatrixExponential::ROTATION
                     && nextToLastExp.getMotionType() == MatrixExponential::ROTATION
                     && secondNextToLastExp.getMotionType() == MatrixExponential::ROTATION
