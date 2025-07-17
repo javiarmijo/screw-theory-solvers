@@ -924,30 +924,18 @@ bool ScrewTheoryIkProblemBuilder::simplifyWithPardosThree(MatrixExponential & ex
                     && parallelAxes(currentExp, prevExp)
                     && !colinearAxes(currentExp, prevExp))
                 {
-                    if(poeTerms[i].known || poeTerms[i].simplified || poeTerms[i+1].known || poeTerms[i+1].simplified)
-                    {
-                        return false;
-                    }
                     simplified = true;
                     continue;
                 }
             }
-            else if (prevExp.getMotionType() == MatrixExponential::ROTATION
-                    && lastExp.getMotionType() == MatrixExponential::ROTATION //estas dos comprobaciones de rotación creo que no harían falta
-                    && !parallelAxes(lastExp, prevExp)
+            else if (!parallelAxes(lastExp, prevExp)
                     && simplified == true)
                 {
-                    if(poeTerms[i].known || poeTerms[i].simplified)
-                    {
-                        return false;
-                    }
-
                     int unknownsCount = std::count_if(poeTerms.begin(), poeTerms.end(), unknownNotSimplifiedTerm);
 
                     if((unknownsCount - (idEnd - idStart)) == 1)
                     {
                         KDL::Vector axesCross = lastExp.getAxis() * prevExp.getAxis();
-
                         MatrixExponential exp7(MatrixExponential::TRANSLATION, axesCross);
 
                         exp1 = exp7;
