@@ -161,4 +161,18 @@ void init_solvers(pybind11::module &m)
                      py::arg("rhs"), py::arg("pointTransform"), py::arg("reference"), py::arg("solutions"));
     algebraic_ur.def("solutions", &Algebraic_UR::solutions);
     algebraic_ur.def("describe", &Algebraic_UR::describe);
+
+    py::class_<ConfigurationSelector> config_selector(m, "ConfigurationSelector");
+    config_selector.def("configure", &ConfigurationSelector::configure, py::arg("solutions"), py::arg("reachability"));
+    config_selector.def("findOptimalConfiguration", &ConfigurationSelector::findOptimalConfiguration, py::arg("qGuess"));
+    config_selector.def("retrievePose", &ConfigurationSelector::retrievePose, py::arg("q"));
+    config_selector.def("getValidSolutionIndex", &ConfigurationSelector::getValidSolutionIndex);
+    // config_selector.def_static("INVALID_CONFIG", &ConfigurationSelector::INVALID_CONFIG);
+
+    py::class_<ConfigurationSelectorLeastOverallAngularDisplacement> config_selector_load(m, "ConfigurationSelectorLeastOverallAngularDisplacement");
+    config_selector_load.def(py::init<const KDL::JntArray &, const KDL::JntArray &>(), py::arg("qMin"), py::arg("qMax"));
+    config_selector_load.def("configure", &ConfigurationSelectorLeastOverallAngularDisplacement::configure, py::arg("solutions"), py::arg("reachability"));
+    config_selector_load.def("findOptimalConfiguration", &ConfigurationSelectorLeastOverallAngularDisplacement::findOptimalConfiguration, py::arg("qGuess"));
+    config_selector_load.def("retrievePose", &ConfigurationSelectorLeastOverallAngularDisplacement::retrievePose, py::arg("q"));
+    config_selector_load.def("getValidSolutionIndex", &ConfigurationSelectorLeastOverallAngularDisplacement::getValidSolutionIndex);
 }
