@@ -276,10 +276,11 @@ private:
  * @ingroup ScrewTheoryLib
  *
  * @brief Fifth Pardos-Gotor subproblem
- *
- *
- *
- *
+ * 
+ * Dual solution, single revolute joint geometric IK subproblem given by
+ * @f$ e\,^{\hat{\xi}\,{\theta}} \cdot \omega_p = \omega_k \ ; e\,^{\hat{\xi}\,{\theta}} \cdot \Pi_p = \Pi_k @f$
+ * (rotation around one single axis applied to a perpendicular line or plane,
+ * see @cite pardosgotor2022str).
  */
 class PardosGotorFive : public ScrewTheoryIkSubproblem
 {
@@ -352,11 +353,11 @@ private:
  * @ingroup ScrewTheoryLib
  *
  * @brief Seventh Pardos-Gotor subproblem
- *
- * Four triple solutions
- *
- * (three consecutive rotation screws applied to a point, one skew + two parallel,
- * @cite pardosgotor2022str).
+ * 
+ * Triple solution, triple revolute joint geometric IK subproblem given by
+ * @f$ e\,^{\hat{\xi_1}\,{\theta_1}} \cdot e\,^{\hat{\xi_2}\,{\theta_2}} \cdot e\,^{\hat{\xi_3}\,{\theta_3}} \cdot p = k @f$
+ * (rotation around three subsequent axes (one skew + two parallel) applied to a point,
+ * see @cite pardosgotor2022str).
  */
 class PardosGotorSeven : public ScrewTheoryIkSubproblem
 {
@@ -393,10 +394,10 @@ private:
  *
  * @brief Eighth Pardos-Gotor subproblem
  *
- * Dual solution, double revolute joint geometric IK subproblem given by
- * @f$ e\,^{\hat{\xi_1}\,{\theta_1}} \cdot e\,^{\hat{\xi_2}\,{\theta_2}} \cdot p = k @f$
- * (consecutive parallel rotation screws applied to a point,
- * see @cite pardosgotor2018str @cite pardosgotor2022str).
+ * Triple solution, triple revolute joint geometric IK subproblem given by
+ * @f$ e\,^{\hat{\xi_1}\,{\theta_1}} \cdot e\,^{\hat{\xi_2}\,{\theta_2}} \cdot e\,^{\hat{\xi_3}\,{\theta_3}} \cdot Hp = Hk @f$
+ * (rotation around three subsequent parallel axes applied to a pose or coordinate system,
+ * see @cite pardosgotor2022str).
  */
 class PardosGotorEight : public ScrewTheoryIkSubproblem
 {
@@ -440,12 +441,12 @@ private:
 /**
  * @ingroup ScrewTheoryLib
  *
- * @brief Third Pardos-Gotor subproblem 2
+ * @brief Third Pardos-Gotor and First Paden Kahan subproblems
  *
  * Dual solution, single prismatic joint geometric IK subproblem given by
- * @f$ \left \| e\,^{\hat{\xi}\,{\theta}} \cdot p - k \right \| = \delta @f$
- * (translation screw for moving @f$ p @f$ to a distance @f$ \delta @f$ from @f$ k @f$,
- * see @cite pardosgotor2018str @cite pardosgotor2022str).
+ * @f$ e\,^{\hat{\xi}\,{\theta}} \cdot p = k_2 @f$
+ * (combination of subproblems pg3 and pk1 used to solve the UR robot family,
+ * see @cite pardosgotor2022str).
  */
 class PardosGotorThreePadenKahanOne : public ScrewTheoryIkSubproblem
 {
@@ -455,7 +456,8 @@ public:
     /**
      * @brief Constructor
      *
-     * @param exp POE term.
+     * @param exp_pk1 axis used for the pk1 subproblem.
+     * @param exp_pg3 axis used for the pg3 subproblem.
      * @param p First characteristic point.
      * @param k Second characteristic point.
      */
@@ -467,7 +469,7 @@ public:
     { return 2; }
 
     const char * describe() const override
-    { return "PG3_2"; }
+    { return "PG3+PK1"; }
 
 private:
     const MatrixExponential exp_pg3, exp_pk1;
@@ -480,10 +482,10 @@ private:
  *
  * @brief Algebraic approach
  *
- * Single solution
- *
- *
- *
+ * Single solution, algebraic approach given by
+ * @f$ H_{ST}(\theta) = e\,^{\hat{\xi_1}\,{\theta_1}} \cdot e\,^{\hat{\xi_2}\,{\theta_2}} \cdot e\,^{\hat{\xi_3}\,{\theta_3}} \cdot e\,^{\hat{\xi_4}\,{\theta_4}} \cdot e\,^{\hat{\xi_5}\,{\theta_5}} \cdot e\,^{\hat{\xi_6}\,{\theta_6}} \cdot H_{ST}(0) @f$
+ * (algebraic approach used to solve the UR robot family,
+ * see @cite pardosgotor2022str).
  */
 class Algebraic_UR : public ScrewTheoryIkSubproblem
 {
@@ -510,7 +512,7 @@ public:
     { return 1; }
 
     const char * describe() const override
-    { return "AA"; }
+    { return "Algebraic"; }
 
 private:
     const int j1, j2;
