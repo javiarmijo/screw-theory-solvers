@@ -770,12 +770,12 @@ Algebraic_UR::Algebraic_UR(int _j1, int _j2)
 
 // -----------------------------------------------------------------------------
 
-bool Algebraic_UR::solve(const KDL::Frame & rhs, const KDL::Frame & pointTransform, const JointConfig & reference, Solutions & solutions, const KDL::Frame & H_S_T_0, const KDL::JntArray & c_solutions, const KDL::Frame & quitar) const
+bool Algebraic_UR::solve(const KDL::Frame & rhs, const KDL::Frame & pointTransform, const JointConfig & reference, Solutions & solutions, const KDL::Frame & H_S_T, const KDL::JntArray & c_solutions, const KDL::Frame & H_S_T_0) const
 {
-    double nx = H_S_T_0.M(0, 0);
-    double ny = H_S_T_0.M(1, 0);
-    double ox = H_S_T_0.M(0, 1);
-    double oy = H_S_T_0.M(1, 1);
+    double nx = H_S_T.M(0, 0);
+    double ny = H_S_T.M(1, 0);
+    double ox = H_S_T.M(0, 1);
+    double oy = H_S_T.M(1, 1);
 
     double theta = reference[0];
 
