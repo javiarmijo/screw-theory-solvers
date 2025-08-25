@@ -769,8 +769,7 @@ void ScrewTheoryIkProblemBuilder::simplifyWithPardosFive()
 
                 if (nextExp.getMotionType() == MatrixExponential::ROTATION
                     && currentExp.getMotionType() == MatrixExponential::ROTATION
-                    && parallelAxes(currentExp, nextExp)
-                    && !colinearAxes(currentExp, nextExp))
+                    && parallelAxes(currentExp, nextExp))
                 {
                     // Might be ultimately simplified, let's find out in the next iterations.
                     simplified = true;
@@ -804,8 +803,7 @@ void ScrewTheoryIkProblemBuilder::simplifyWithPardosFive()
 
                 if (prevExp.getMotionType() == MatrixExponential::ROTATION
                     && currentExp.getMotionType() == MatrixExponential::ROTATION
-                    && parallelAxes(currentExp, prevExp)
-                    && !colinearAxes(currentExp, prevExp))
+                    && parallelAxes(currentExp, prevExp))
                 {
                     simplified = true;
                     continue;
@@ -860,8 +858,7 @@ bool ScrewTheoryIkProblemBuilder::simplifyWithPardosThree(MatrixExponential & ex
 
                 if (prevExp.getMotionType() == MatrixExponential::ROTATION
                     && currentExp.getMotionType() == MatrixExponential::ROTATION
-                    && parallelAxes(currentExp, prevExp)
-                    && !colinearAxes(currentExp, prevExp))
+                    && parallelAxes(currentExp, prevExp))
                 {
                     simplified = true;
                     continue;
@@ -870,10 +867,10 @@ bool ScrewTheoryIkProblemBuilder::simplifyWithPardosThree(MatrixExponential & ex
             else if (!parallelAxes(lastExp, prevExp)
                     && simplified == true)
                 {
-                    int unknownsCount = std::count_if(poeTerms.begin(), poeTerms.end(), unknownNotSimplifiedTerm);
+                    //int unknownsCount = std::count_if(poeTerms.begin(), poeTerms.end(), unknownNotSimplifiedTerm);
 
-                    if((unknownsCount - (idEnd - idStart)) == 1)
-                    {
+                    // if((unknownsCount - (idEnd - idStart)) == 1)
+                    // {
                         KDL::Vector axesCross = lastExp.getAxis() * prevExp.getAxis();
                         MatrixExponential exp7(MatrixExponential::TRANSLATION, axesCross);
 
@@ -882,7 +879,7 @@ bool ScrewTheoryIkProblemBuilder::simplifyWithPardosThree(MatrixExponential & ex
                         point = lastExp.getOrigin();
 
                         return true;
-                    }
+                    // }
                 }
                 break;
         }
