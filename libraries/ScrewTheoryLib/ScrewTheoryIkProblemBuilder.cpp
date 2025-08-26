@@ -409,18 +409,20 @@ ScrewTheoryIkProblem::JointIdsToSubproblem ScrewTheoryIkProblemBuilder::trySolve
             else if (knownsCount == 2)
             {
                 auto itUnknown = std::find_if(poeTerms.begin(), poeTerms.end(), unknownTerm);
-                int un = std::distance(poeTerms.begin(), itUnknown);
+                int unKnownID = std::distance(poeTerms.begin(), itUnknown);
                 int last = std::distance(poeTerms.begin(), poeTerms.end()-1);
 
                 auto itknown1 = std::find_if(poeTerms.begin(), poeTerms.end(), knownTerm);
                 int q1 = std::distance(poeTerms.begin(), itknown1);
                 auto itknown2 = std::find_if(itknown1 + 1, poeTerms.end(), knownTerm);
                 int q2 = std::distance(poeTerms.begin(), itknown2);
+                
+                const MatrixExponential & first = poe.exponentialAtJoint(unKnownID);
+                const MatrixExponential & second = poe.exponentialAtJoint(unKnownID+1);
+                const MatrixExponential & third = poe.exponentialAtJoint(unKnownID+2);
+                const MatrixExponential & sixth = poe.exponentialAtJoint(last);
 
-                const MatrixExponential & sim_axis = poe.exponentialAtJoint(un);
-                const MatrixExponential & last_axis = poe.exponentialAtJoint(last);
-
-                if (parallelAxes(sim_axis, last_axis))
+                if (parallelAxes(first, second) && parallelAxes(second, third) && parallelAxes(third, sixth))
                 {
                 poeTerms[last].known = true;
                 return {{last}, new Algebraic_UR(q1, q2)};
