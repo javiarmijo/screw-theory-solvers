@@ -302,6 +302,7 @@ ScrewTheoryIkProblem::Steps ScrewTheoryIkProblemBuilder::searchSolutions()
         // Find a solution if available.
         if (auto [ids, subproblem] = trySolve(depth); subproblem != nullptr)
         {
+            std::cout << "[SOLUTION FOUND]" << subproblem->describe() <<"\n";
             // Solution found, reset and start again. We'll iterate over the same points, taking
             // into account that some terms are already known.
             steps.emplace_back(ids, subproblem);
@@ -614,7 +615,6 @@ ScrewTheoryIkProblem::JointIdsToSubproblem ScrewTheoryIkProblemBuilder::trySolve
                     poeTerms[lastExpId].known = poeTerms[nextToLastExpId].known = poeTerms[secondNextToLastExpId].known = true;
                     return {{secondNextToLastExpId, nextToLastExpId, lastExpId}, new PardosGotorSeven(secondNextToLastExp, nextToLastExp, lastExp, testPoints[0])};
                 }
-                /*
             else if (lastExp.getMotionType() == MatrixExponential::ROTATION
                     && nextToLastExp.getMotionType() == MatrixExponential::ROTATION
                     && secondNextToLastExp.getMotionType() == MatrixExponential::ROTATION
@@ -629,7 +629,6 @@ ScrewTheoryIkProblem::JointIdsToSubproblem ScrewTheoryIkProblemBuilder::trySolve
                         return {{secondNextToLastExpId, nextToLastExpId, lastExpId}, new PardosGotorEight(secondNextToLastExp, nextToLastExp, lastExp, testPoints[0], secondNextToLastExpId, lastExpId, poe)};
                     }
                 }
-                //*/
         }
         pg5 = true;
     }
