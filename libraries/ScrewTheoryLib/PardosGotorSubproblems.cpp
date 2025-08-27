@@ -161,20 +161,36 @@ bool PardosGotorFour::solve(const KDL::Frame & rhs, const KDL::Frame & pointTran
 
     double c_test = u_p_norm + v_p_norm - c_norm;
     bool c_zero = KDL::Equal(c_test, 0.0);
+    KDL::Vector c, d;
 
     if (!c_zero && c_test > 0.0 && u_p_norm > 0.0 && v_p_norm > 0.0)
     {
         KDL::Vector omega_a = c_diff / c_norm;
         KDL::Vector omega_h = exp1.getAxis() * omega_a;
+        bool intersection = true;
+        bool zeros = KDL::Equal(c_norm+v_p_norm, u_p_norm) || KDL::Equal(c_norm+u_p_norm, v_p_norm) || KDL::Equal(u_p_norm+v_p_norm, c_norm);
 
-        double a = (std::pow(c_norm, 2) - std::pow(u_p_norm, 2) + std::pow(v_p_norm, 2)) / (2 * c_norm);
-        double h = std::sqrt(std::abs(std::pow(v_p.Norm(), 2) - std::pow(a, 2)));
+        if((c_norm>(v_p_norm+u_p_norm)||v_p_norm>(c_norm+u_p_norm)||u_p_norm>(c_norm+v_p_norm)) && !zeros)
+        {
+            c = c1 + v_p_norm*omega_a;
+            d = c;
 
-        KDL::Vector term1 = c1 + a * omega_a;
-        KDL::Vector term2 = h * omega_h;
+            if(!KDL::Equal(c, f) && !KDL::Equal(c, k))
+            {
+                intersection = false;
+            }  
+        }
+        else
+        {
+            double a = (std::pow(c_norm, 2) - std::pow(u_p_norm, 2) + std::pow(v_p_norm, 2)) / (2 * c_norm);
+            double h = std::sqrt(std::abs(std::pow(v_p.Norm(), 2) - std::pow(a, 2)));
 
-        KDL::Vector c = term1 + term2;
-        KDL::Vector d = term1 - term2;
+            KDL::Vector term1 = c1 + a * omega_a;
+            KDL::Vector term2 = h * omega_h;
+
+            c = term1 + term2;
+            d = term1 - term2;
+        }
 
         KDL::Vector m1 = c - exp1.getOrigin();
         KDL::Vector m2 = c - exp2.getOrigin();
@@ -199,7 +215,7 @@ bool PardosGotorFour::solve(const KDL::Frame & rhs, const KDL::Frame & pointTran
             {normalizeAngle(theta1_2), normalizeAngle(theta2_2)}
         };
 
-        return samePlane && KDL::Equal(m1_p.Norm(), v_p_norm);
+        return samePlane && KDL::Equal(m1_p.Norm(), v_p_norm) && intersection;
     }
     else
     {
@@ -602,20 +618,36 @@ bool PardosGotorEight::solve(const KDL::Frame & rhs, const KDL::Frame & pointTra
 
     double c_test = u_p_norm + v_p_norm - c_norm;
     bool c_zero = KDL::Equal(c_test, 0.0);
+    KDL::Vector c, d;
 
     if (!c_zero && c_test > 0.0 && u_p_norm > 0.0 && v_p_norm > 0.0)
     {
         KDL::Vector omega_a = c_diff / c_norm;
         KDL::Vector omega_h = exp1.getAxis() * omega_a;
+        bool intersection = true;
+        bool zeros = KDL::Equal(c_norm+v_p_norm, u_p_norm) || KDL::Equal(c_norm+u_p_norm, v_p_norm) || KDL::Equal(u_p_norm+v_p_norm, c_norm);
 
-        double a = (std::pow(c_norm, 2) - std::pow(u_p_norm, 2) + std::pow(v_p_norm, 2)) / (2 * c_norm);
-        double h = std::sqrt(std::abs(std::pow(v_p.Norm(), 2) - std::pow(a, 2)));
+        if((c_norm>(v_p_norm+u_p_norm)||v_p_norm>(c_norm+u_p_norm)||u_p_norm>(c_norm+v_p_norm)) && !zeros)
+        {
+            c = c1 + v_p_norm*omega_a;
+            d = c;
 
-        KDL::Vector term1 = c1 + a * omega_a;
-        KDL::Vector term2 = h * omega_h;
+            if(!KDL::Equal(c, f_pg4) && !KDL::Equal(c, k_pg4))
+            {
+                intersection = false;
+            }  
+        }
+        else
+        {
+            double a = (std::pow(c_norm, 2) - std::pow(u_p_norm, 2) + std::pow(v_p_norm, 2)) / (2 * c_norm);
+            double h = std::sqrt(std::abs(std::pow(v_p.Norm(), 2) - std::pow(a, 2)));
 
-        KDL::Vector c = term1 + term2;
-        KDL::Vector d = term1 - term2;
+            KDL::Vector term1 = c1 + a * omega_a;
+            KDL::Vector term2 = h * omega_h;
+
+            c = term1 + term2;
+            d = term1 - term2;
+        }
 
         KDL::Vector m1 = c - exp1.getOrigin();
         KDL::Vector m2 = c - exp2.getOrigin();
@@ -640,7 +672,7 @@ bool PardosGotorEight::solve(const KDL::Frame & rhs, const KDL::Frame & pointTra
             {normalizeAngle(theta1_2), normalizeAngle(theta2_2)}
         };
         
-        pg4_ret = samePlane && KDL::Equal(m1_p.Norm(), v_p_norm);
+        pg4_ret = samePlane && KDL::Equal(m1_p.Norm(), v_p_norm) && intersection;
     }
     else
     {
