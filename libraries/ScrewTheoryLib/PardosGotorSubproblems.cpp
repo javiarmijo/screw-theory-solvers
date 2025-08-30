@@ -259,22 +259,12 @@ bool PardosGotorFive::solve(const KDL::Frame & rhs, const KDL::Frame & pointTran
 {
     KDL::Vector f = pointTransform * p;
     KDL::Vector k = rhs * p;
-    // KDL::Vector k_verify = rhs * p;
-
-    // bool ret = true;
 
     KDL::Vector u = f - exp.getOrigin();
     KDL::Vector v = k - exp.getOrigin();
 
     KDL::Vector u_w = axisPow * u;
     KDL::Vector v_w = axisPow * v;
-
-    // for(int i=0; i < 3; i++) //ensure that the coordinate corresponding to the axis of rotation is the same for both f and k.
-    // {
-    //     if(exp.getAxis().data[i]!=0) k_verify.data[i]=f.data[i];
-    // }
-
-    // if (!(KDL::Equal(u_w, axisPow * (k_verify - exp.getOrigin())))) ret = false;
 
     KDL::Vector u_p = u - u_w;
     KDL::Vector v_p = v - v_w;
@@ -310,8 +300,7 @@ bool PardosGotorFive::solve(const KDL::Frame & rhs, const KDL::Frame & pointTran
     }
 
     solutions = {{normalizeAngle(theta_k)}, {normalizeAngle(theta_d)}};
-
-    // return ret;
+    
     return true;
 }
 
