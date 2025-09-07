@@ -302,7 +302,6 @@ ScrewTheoryIkProblem::Steps ScrewTheoryIkProblemBuilder::searchSolutions()
         // Find a solution if available.
         if (auto [ids, subproblem] = trySolve(depth); subproblem != nullptr)
         {
-            std::cout << "[SOLUTION FOUND]" << subproblem->describe() <<"\n";
             // Solution found, reset and start again. We'll iterate over the same points, taking
             // into account that some terms are already known.
             steps.emplace_back(ids, subproblem);

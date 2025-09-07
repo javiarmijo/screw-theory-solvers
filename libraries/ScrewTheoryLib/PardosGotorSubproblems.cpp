@@ -153,7 +153,6 @@ bool PardosGotorFour::solve(const KDL::Frame & rhs, const KDL::Frame & pointTran
 
     if (!samePlane)
     {
-        std::cout<<"entra a samePlane\n";
         c_diff = n; // proyection of c_diff onto the perpendicular plane
         c1 = c2 - c_diff; // c1 on the intersecion of axis 1 and the normal plane to both axes
     }
@@ -466,10 +465,6 @@ bool PardosGotorSeven::solve(const KDL::Frame &rhs, const KDL::Frame &pointTrans
     Solutions pg4_c_sols, pg4_d_sols;
     bool pg4_ret_c = pg4.solve(KDL::Frame(c1 - f), KDL::Frame::Identity(), reference, pg4_c_sols);
     bool pg4_ret_d = pg4.solve(KDL::Frame(d1 - f), KDL::Frame::Identity(), reference, pg4_d_sols);
-
-    std::cout << "c1 = (" <<c1.x() << ", " <<c1.y() << ", " <<c1.z() << ")\n ";
-    std::cout << "d1 = (" <<d1.x() << ", " <<d1.y() << ", " <<d1.z() << ")\n ";
-
 
     if ((!pg4_ret_c && !pg4_ret_d) && (KDL::dot(axesCross, o1 - o2) == 0.0))
     {
