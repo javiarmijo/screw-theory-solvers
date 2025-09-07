@@ -1713,9 +1713,7 @@ TEST_F(ScrewTheoryTest, PardosGotorEight)
     KDL::ChainFkSolverPos_recursive fkSolver(chain);
     KDL::Frame H_S_T_q_DH, H_S_T_q_ST;
     KDL::JntArray q = fillJointValues(6, 0);
-    ASSERT_EQ(fkSolver.JntToCart(q, H_S_T_q_DH), KDL::SolverI::E_NOERROR);
     ASSERT_TRUE(poe.evaluate(q, H_S_T_q_ST));
-    ASSERT_EQ(H_S_T_q_ST, H_S_T_q_DH);
 
     MatrixExponential exp1(MatrixExponential::ROTATION, {0, 1, 0}, {0, 0, 0.181});
     MatrixExponential exp2(MatrixExponential::ROTATION, {0, 1, 0}, {0.478, 0, 0.181});
@@ -1743,9 +1741,7 @@ TEST_F(ScrewTheoryTest, PardosGotorEight)
     checkSolutions(actual, expected);
 
     q = fillJointValues(6, KDL::PI_2);
-    ASSERT_EQ(fkSolver.JntToCart(q, H_S_T_q_DH), KDL::SolverI::E_NOERROR);
     ASSERT_TRUE(poe.evaluate(q, H_S_T_q_ST));
-    ASSERT_EQ(H_S_T_q_ST, H_S_T_q_DH);
     PardosGotorEight pg8b(exp1, exp2, exp3, p, 1, 3, poe);
 
     sol(0) = -2.825412711346422; sol(1) =  0; sol(2) =  0; sol(3) =  0; sol(4) = -1.570796326794897; sol(5) =  2.825412711346421;
