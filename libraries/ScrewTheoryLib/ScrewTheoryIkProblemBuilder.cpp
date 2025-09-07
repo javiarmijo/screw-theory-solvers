@@ -388,7 +388,6 @@ ScrewTheoryIkProblem::JointIdsToSubproblem ScrewTheoryIkProblemBuilder::trySolve
     int knownsCount = std::count_if(poeTerms.begin(), poeTerms.end(), knownTerm);
     int simplifiedCount = std::count_if(poeTerms.begin(), poeTerms.end(), unknownSimplifiedTerm);
     int unknownsCount = std::count_if(poeTerms.begin(), poeTerms.end(), unknownNotSimplifiedTerm);
-    bool pg5 = false;
 
     if (unknownsCount == 0 || unknownsCount > 3) // TODO: hardcoded
     {
@@ -406,24 +405,25 @@ ScrewTheoryIkProblem::JointIdsToSubproblem ScrewTheoryIkProblemBuilder::trySolve
 
                 poeTerms[lastExpId_pg3].known = true;
 
-                //return {{lastExpId_pg3}, new PardosGotorThreePadenKahanOne(exp_pg3, exp_pk1, testPoints[0], point)};
                 return {{lastExpId_pg3}, new PardosGotorThreePadenKahanOne(exp_pg3, exp_pk1, KDL::Vector(0.838, 0.364, 0.061), point)};
             }
             else if (knownsCount == 2)
             {
                 auto itUnknown = std::find_if(poeTerms.begin(), poeTerms.end(), unknownTerm);
-                int un = std::distance(poeTerms.begin(), itUnknown);
+                int unKnownID = std::distance(poeTerms.begin(), itUnknown);
                 int last = std::distance(poeTerms.begin(), poeTerms.end()-1);
 
                 auto itknown1 = std::find_if(poeTerms.begin(), poeTerms.end(), knownTerm);
                 int q1 = std::distance(poeTerms.begin(), itknown1);
                 auto itknown2 = std::find_if(itknown1 + 1, poeTerms.end(), knownTerm);
                 int q2 = std::distance(poeTerms.begin(), itknown2);
+                
+                const MatrixExponential & first = poe.exponentialAtJoint(unKnownID);
+                const MatrixExponential & second = poe.exponentialAtJoint(unKnownID+1);
+                const MatrixExponential & third = poe.exponentialAtJoint(unKnownID+2);
+                const MatrixExponential & sixth = poe.exponentialAtJoint(last);
 
-                const MatrixExponential & sim_axis = poe.exponentialAtJoint(un);
-                const MatrixExponential & last_axis = poe.exponentialAtJoint(last);
-
-                if (parallelAxes(sim_axis, last_axis))
+                if (parallelAxes(first, second) && parallelAxes(second, third) && parallelAxes(third, sixth))
                 {
                 poeTerms[last].known = true;
                 return {{last}, new Algebraic_UR(q1, q2)};
@@ -444,51 +444,7 @@ ScrewTheoryIkProblem::JointIdsToSubproblem ScrewTheoryIkProblemBuilder::trySolve
     std::advance(nextToLastUnknown, 1);
     auto doubleNextToLastUnknown = nextToLastUnknown;
     std::advance(doubleNextToLastUnknown, 1);
-/*
-    if(unknownsCount == 3 && nextToLastUnknown != poeTerms.rend() && simplifiedCount == 0)
-    {
-        if ((!unknownNotSimplifiedTerm(*nextToLastUnknown)) && (!unknownNotSimplifiedTerm(*doubleNextToLastUnknown)))
-        {
-            return {{}, nullptr};
-        }
 
-        int nextToLastExpId = lastExpId - 1;
-        const MatrixExponential & nextToLastExp = poe.exponentialAtJoint(nextToLastExpId);
-        int secondNextToLastExpId = nextToLastExpId - 1;
-        const MatrixExponential & secondNextToLastExp = poe.exponentialAtJoint(secondNextToLastExpId);
-
-        if (depth == 0)
-        {
-            KDL::Vector r;//QUITAR NOOOOOOOOOOOO?
-
-            if (lastExp.getMotionType() == MatrixExponential::ROTATION
-                    && nextToLastExp.getMotionType() == MatrixExponential::ROTATION
-                    && secondNextToLastExp.getMotionType() == MatrixExponential::ROTATION
-                    && !parallelAxes(secondNextToLastExp, nextToLastExp)
-                    && parallelAxes(nextToLastExp, lastExp)
-                    && !colinearAxes(nextToLastExp, lastExp))
-                {
-                    poeTerms[lastExpId].known = poeTerms[nextToLastExpId].known = poeTerms[secondNextToLastExpId].known = true;
-                    return {{secondNextToLastExpId, nextToLastExpId, lastExpId}, new PardosGotorSeven(secondNextToLastExp, nextToLastExp, lastExp, testPoints[0])};
-                }
-            else if (lastExp.getMotionType() == MatrixExponential::ROTATION
-                    && nextToLastExp.getMotionType() == MatrixExponential::ROTATION
-                    && secondNextToLastExp.getMotionType() == MatrixExponential::ROTATION
-                    && parallelAxes(secondNextToLastExp, nextToLastExp)
-                    && parallelAxes(nextToLastExp, lastExp)
-                    && !colinearAxes(nextToLastExp, lastExp)
-                    && !colinearAxes(secondNextToLastExp, nextToLastExp))
-                {
-                    if(simplifiedCount == 0)
-                    {
-                        poeTerms[lastExpId].known = poeTerms[nextToLastExpId].known = poeTerms[secondNextToLastExpId].known = true;
-                        return {{secondNextToLastExpId, nextToLastExpId, lastExpId}, new PardosGotorEight(secondNextToLastExp, nextToLastExp, lastExp, testPoints[0], secondNextToLastExpId, lastExpId, poe)};
-                    }
-                }
-        }
-        pg5 = true;
-    }
-//*/
     // Select the most adequate subproblem, if available.
     if (unknownsCount == 1)
     {
@@ -502,13 +458,12 @@ ScrewTheoryIkProblem::JointIdsToSubproblem ScrewTheoryIkProblemBuilder::trySolve
                     poeTerms[lastExpId].known = true;
                     return {{lastExpId}, new PadenKahanOne(lastExp, testPoints[0])};
                 }
-                /*else
+                else
                 {
                     poeTerms[lastExpId].known = true;
                     const MatrixExponential & nextToLastExp = poe.exponentialAtJoint(lastExpId + 1);
                     return {{lastExpId}, new PardosGotorFive(lastExp, nextToLastExp, testPoints[0])};
                 }
-                */
             }
 
             if (lastExp.getMotionType() == MatrixExponential::TRANSLATION)
@@ -540,7 +495,6 @@ ScrewTheoryIkProblem::JointIdsToSubproblem ScrewTheoryIkProblemBuilder::trySolve
                 return {{lastExpId}, new PardosGotorThree(lastExp, testPoints[0], testPoints[1])};
             }
         }
-        pg5 = true;
     }
     else if (unknownsCount == 2 && lastUnknown != poeTerms.rend())
     {
@@ -587,7 +541,6 @@ ScrewTheoryIkProblem::JointIdsToSubproblem ScrewTheoryIkProblemBuilder::trySolve
                 return {{nextToLastExpId, lastExpId}, new PardosGotorTwo(nextToLastExp, lastExp, testPoints[0])};
             }
         }
-        pg5 = true;
     }
     else if(unknownsCount == 3 && nextToLastUnknown != poeTerms.rend() && simplifiedCount == 0)
     {
@@ -603,8 +556,6 @@ ScrewTheoryIkProblem::JointIdsToSubproblem ScrewTheoryIkProblemBuilder::trySolve
 
         if (depth == 0)
         {
-            KDL::Vector r;//QUITAR NOOOOOOOOOOOO?
-
             if (lastExp.getMotionType() == MatrixExponential::ROTATION
                     && nextToLastExp.getMotionType() == MatrixExponential::ROTATION
                     && secondNextToLastExp.getMotionType() == MatrixExponential::ROTATION
@@ -630,19 +581,7 @@ ScrewTheoryIkProblem::JointIdsToSubproblem ScrewTheoryIkProblemBuilder::trySolve
                     }
                 }
         }
-        pg5 = true;
     }
-    ///*
-    if (pg5 == true && poeTerms[lastExpId + 1].simplified == true
-    && lastExp.getMotionType() == MatrixExponential::ROTATION
-    && !liesOnAxis(lastExp, testPoints[0])
-    && unknownsCount == 1 && depth == 0)
-    {
-        const MatrixExponential & nextToLastExp = poe.exponentialAtJoint(lastExpId + 1);
-        poeTerms[lastExpId].known = true;
-        return {{lastExpId}, new PardosGotorFive(lastExp, nextToLastExp, testPoints[0])};
-    }
-    //*/
 
     return {{}, nullptr};
 }
@@ -667,7 +606,7 @@ void ScrewTheoryIkProblemBuilder::simplify(int depth)
                 break;
             }
         }
-        simplifyWithPardosFive();//si no se ha simplificado de ninguna forma, se prueba con PG5, no hace falta ir exponencial por exponencial ya que la función actúa para el poe completo
+        simplifyWithPardosFive();
     }
 }
 
@@ -833,21 +772,16 @@ void ScrewTheoryIkProblemBuilder::simplifyWithPardosFive()
 
                 if (nextExp.getMotionType() == MatrixExponential::ROTATION
                     && currentExp.getMotionType() == MatrixExponential::ROTATION
-                    && parallelAxes(currentExp, nextExp)
-                    && !colinearAxes(currentExp, nextExp))
+                    && parallelAxes(currentExp, nextExp))
                 {
-                    if(poeTerms[i].known || poeTerms[i].simplified || poeTerms[i+1].known || poeTerms[i+1].simplified) break;//CREO QUE NO HACE FALTA
                     // Might be ultimately simplified, let's find out in the next iterations.
                     simplified = true;
                     continue;
                 }
             }
-            else if (nextExp.getMotionType() == MatrixExponential::ROTATION
-                    && firstExp.getMotionType() == MatrixExponential::ROTATION //estas dos comprobaciones de rotación creo que no harían falta
-                    && !parallelAxes(firstExp, nextExp)
+            else if (!parallelAxes(firstExp, nextExp)
                     && simplified == true)
             {
-                if(poeTerms[i].known || poeTerms[i].simplified || poeTerms[i+1].known || poeTerms[i+1].simplified) break;
                 // Can simplify everything to the *right* of this PoE term.
                 for (int j = idStart + 1; j <= idEnd; j++)
                 {
@@ -872,17 +806,13 @@ void ScrewTheoryIkProblemBuilder::simplifyWithPardosFive()
 
                 if (prevExp.getMotionType() == MatrixExponential::ROTATION
                     && currentExp.getMotionType() == MatrixExponential::ROTATION
-                    && parallelAxes(currentExp, prevExp)
-                    && !colinearAxes(currentExp, prevExp))
+                    && parallelAxes(currentExp, prevExp))
                 {
-                    if(poeTerms[i].known || poeTerms[i].simplified || poeTerms[i+1].known || poeTerms[i+1].simplified) break;
                     simplified = true;
                     continue;
                 }
             }
-            else if (prevExp.getMotionType() == MatrixExponential::ROTATION
-                    && lastExp.getMotionType() == MatrixExponential::ROTATION //estas dos comprobaciones de rotación creo que no harían falta
-                    && !parallelAxes(lastExp, prevExp)
+            else if (!parallelAxes(lastExp, prevExp)
                     && simplified == true)
             {
                 // Can simplify everything to the *left* of this PoE term.
@@ -931,37 +861,20 @@ bool ScrewTheoryIkProblemBuilder::simplifyWithPardosThree(MatrixExponential & ex
 
                 if (prevExp.getMotionType() == MatrixExponential::ROTATION
                     && currentExp.getMotionType() == MatrixExponential::ROTATION
-                    && parallelAxes(currentExp, prevExp)
-                    && !colinearAxes(currentExp, prevExp))
+                    && parallelAxes(currentExp, prevExp))
                 {
-                    if(poeTerms[i].known || poeTerms[i].simplified || poeTerms[i+1].known || poeTerms[i+1].simplified)
-                    {
-                        //std::cout <<"NO NOOOO???  hola??????\n";
-                        return false;
-                        //break;
-                    }
-                    //std::cout<<"NUEVO : paralelos los ejes " << i << " y " << i + 1 << " (al revés)\n";
                     simplified = true;
                     continue;
                 }
             }
-            else if (prevExp.getMotionType() == MatrixExponential::ROTATION
-                    && lastExp.getMotionType() == MatrixExponential::ROTATION //estas dos comprobaciones de rotación creo que no harían falta
-                    && !parallelAxes(lastExp, prevExp)
+            else if (!parallelAxes(lastExp, prevExp)
                     && simplified == true)
                 {
-                    if(poeTerms[i].known || poeTerms[i].simplified)
-                    {
-                        //std::cout <<"hola??????\n";
-                        return false;
-                    }
+                    //int unknownsCount = std::count_if(poeTerms.begin(), poeTerms.end(), unknownNotSimplifiedTerm);
 
-                    int unknownsCount = std::count_if(poeTerms.begin(), poeTerms.end(), unknownNotSimplifiedTerm);
-
-                    if((unknownsCount - (idEnd - idStart)) == 1)
-                    {
+                    // if((unknownsCount - (idEnd - idStart)) == 1)
+                    // {
                         KDL::Vector axesCross = lastExp.getAxis() * prevExp.getAxis();
-
                         MatrixExponential exp7(MatrixExponential::TRANSLATION, axesCross);
 
                         exp1 = exp7;
@@ -969,7 +882,7 @@ bool ScrewTheoryIkProblemBuilder::simplifyWithPardosThree(MatrixExponential & ex
                         point = lastExp.getOrigin();
 
                         return true;
-                    }
+                    // }
                 }
                 break;
         }
